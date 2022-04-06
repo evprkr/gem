@@ -19,7 +19,7 @@ def main(stdscr):
     while True:
         stdscr.erase()
         for row, line in enumerate(buffer[editor.buff_y:editor.buff_y + editor.buff_h]):
-            stdscr.addstr(row, 0, line)
+            stdscr.addstr(row, 0, line[editor.buff_x:editor.buff_x + editor.buff_w])
 
         stdscr.move(*editor.translate_curs())
 

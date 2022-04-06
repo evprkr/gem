@@ -7,6 +7,10 @@ Testes.
 
 ---
 
+Alright, this is going to be a very long line. I'm going to type things until this line goes off the screen, that way I can test the horizontal scrolling of the buffer. I just want to make sure there's enough text here. This is probably enough.
+
+---
+
 And now, a ballad.
 
 Some

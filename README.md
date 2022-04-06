@@ -7,6 +7,8 @@ I'm working on this in my spare time in between like 50 other personal projects,
 Any planned features (listed below) are not guaranteed, but I'm hoping to at least get the basic functionality and some fun extra stuff going, and we'll see what happens from there.
 
 ## "Planned" Features
+* Customizable keyboard shortcuts that utilize a leader key for platform-agnosticism
+* Commandline with customizable commands
 * Syntax highlighting for major languages
 * Statusline showing the current file, save status, cursor position, etc.
 * Tabline for keeping multiple buffers open and switching between them

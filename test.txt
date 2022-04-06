@@ -1,3 +1,51 @@
-This is a test file, it's only purpose is to test the Gem editor.
+This file is here to be used as a test, and nothing else.
+I need to think of some more things to write here, so I have more text to test.
 
-What a sad, lonely existence.
+Testing text is a test, due to the testy nature of the text being tested.
+
+Testes.
+
+---
+
+And now, a ballad.
+
+Some
+Body
+Once
+Told
+Me
+The
+World
+Was
+Gonna
+Roll
+Me
+I
+Ain't
+The
+Sharpest
+Tool
+In
+The
+Shed
+She
+Was
+Looking
+Kind
+Of
+Dumb
+With
+Her
+Finger
+And
+Her
+Thumb
+In
+The
+Shape
+Of
+An
+L
+On
+Her
+Forehead

@@ -18,10 +18,10 @@ def main(stdscr):
 
     while True:
         stdscr.erase()
-        for row, line in enumerate(buffer[:editor.height]):
-            stdscr.addstr(row, 0, line[:editor.width])
+        for row, line in enumerate(buffer[editor.buff_y:editor.buff_y + editor.buff_h]):
+            stdscr.addstr(row, 0, line)
 
-        stdscr.move(editor.cursor_y, editor.cursor_x)
+        stdscr.move(*editor.translate_curs())
 
         key = stdscr.getkey()
         if key == 'q': sys.exit(0) # Exit

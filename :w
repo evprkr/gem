@@ -17,21 +17,6 @@ class Editor:
         self.curs_offset_x = 0 # curs_x minimum value offset
         self.curs_offset_y = 0 # curs_y minimum value offset
 
-    @property
-    def buff_bottom(self):
-        return self.buff_y + self.buff_h - 1
-
-    def buff_scroll_up(self):
-        if self.curs_y == self.buff_y - 1 and self.buff_y > 0:
-            self.buff_y -= 1
-
-    def buff_scroll_down(self):
-        if self.curs_y == self.buff_bottom + 1 and self.buff_bottom < len(self.buffer) - 1:
-            self.buff_y += 1
-
-    def translate_curs(self):
-        return self.curs_y - self.buff_y, self.curs_x - self.buff_x
-
     def move_cursor(self, key):
         if key == 'h': # Left
             if self.curs_x > self.curs_offset_x:
@@ -45,9 +30,7 @@ class Editor:
             if self.curs_y > self.curs_offset_y:
                 self.curs_y -= 1
                 self.curs_x = min(self.curs_hint, len(self.buffer[self.curs_y]) - 1)
-                self.buff_scroll_up()
         if key == 'j': # Down
             if self.curs_y < len(self.buffer) - self.curs_offset_y - 1:
                 self.curs_y += 1
                 self.curs_x = min(self.curs_hint, len(self.buffer[self.curs_y]) - 1)
-                self.buff_scroll_down()

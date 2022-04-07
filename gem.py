@@ -4,28 +4,31 @@ import os, sys
 import argparse
 import curses
 
+# Local Imports
+from buffer import *
+from cursor import *
 from editor import *
 
-def main(stdscr):
+# Application Start
+def main(screen):
     parser = argparse.ArgumentParser()
     parser.add_argument("file")
     args = parser.parse_args()
 
     with open(args.file) as f:
-        buffer = f.readlines()
+        contents = f.readlines()
 
-    editor = Editor(buffer, curses.COLS - 1, curses.LINES - 1)
+    # Init Buffer, Cursor, Editor
+    buffer = Buffer(contents, curses.LINES - 1, curses.COLS - 1)
+    cursor = Cursor(buffer, buffer.margin_top, buffer.margin_left)
+    editor = Editor(screen, buffer, cursor)
 
     while True:
-        stdscr.erase()
-        for row, line in enumerate(buffer[editor.buff_y:editor.buff_y + editor.buff_h]):
-            stdscr.addstr(row, 0, line[editor.buff_x:editor.buff_x + editor.buff_w])
+        editor.refresh()
 
-        stdscr.move(*editor.translate_curs())
-
-        key = stdscr.getkey()
-        if key == 'q': sys.exit(0) # Exit
-        elif key in 'hjkl': editor.move_cursor(key) # Cursor movement
+        key = screen.getkey()
+        if key == 'q': sys.exit(0) # Exit Application
+        else: editor.handle_keypress(key)
 
 if __name__ == "__main__":
     curses.wrapper(main)

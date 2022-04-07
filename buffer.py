@@ -1,8 +1,8 @@
 # buffer.py
 
 class Buffer:
-    def __init__(self, contents, rows, cols):
-        self.contents = contents # Buffer contents (text)
+    def __init__(self, lines, rows, cols):
+        self.lines = lines # Buffer contents (text)
 
         self.rows = rows # Total number of rows in the buffer
         self.cols = cols # Total number of cols in the buffer
@@ -26,20 +26,27 @@ class Buffer:
     def right(self):
         return self.col_offset + self.cols - 1
 
+    # Get total number of lines
+    def line_count(self):
+        return len(self.lines)
+
+    # Get specific line from lines
+    def get_line(self, index):
+        return self.lines[index]
+
     # Vertical Scrolling
-    def scroll_vert(self, cursor):
+    def scroll(self, cursor):
         if cursor.row == (self.row_offset + self.scroll_offset_v) - 1 and self.row_offset > 0:
             self.row_offset -= 1
-            return
-        if cursor.row == (self.bottom - self.scroll_offset_v) + 1 and self.bottom < len(self.contents) - 1:
+        if cursor.row == (self.bottom - self.scroll_offset_v) + 1 and self.bottom < len(self.lines) - 1:
             self.row_offset += 1
-            return
-
-    # Horizontal Scrolling
-    def scroll_horiz(self, cursor):
         if cursor.col == (self.col_offset + self.scroll_offset_h) - 1 and self.col_offset > 0:
             self.col_offset -= 1
-            return
-        if cursor.col == (self.right - self.scroll_offset_h) + 1 and self.right < len(self.contents[cursor.row]) - 1:
+        if cursor.col == (self.right - self.scroll_offset_h) + 1 and self.right < len(self.lines[cursor.row]) - 1:
             self.col_offset += 1
-            return
+
+        while cursor.col > self.cols + self.col_offset:
+            self.col_offset += 1;
+
+        while cursor.col < self.col_offset:
+            self.col_offset -= 1;

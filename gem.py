@@ -18,17 +18,20 @@ def main(screen):
     with open(args.file) as f:
         contents = f.readlines()
 
-    # Init Buffer, Cursor, Editor
+    # Init Components
     buffer = Buffer(contents, curses.LINES - 1, curses.COLS - 1)
     cursor = Cursor(buffer, buffer.margin_top, buffer.margin_left)
     editor = Editor(screen, buffer, cursor)
 
-    while True:
+    while not editor.exit:
         editor.refresh()
 
-        key = screen.getkey()
-        if key == 'q': sys.exit(0) # Exit Application
-        else: editor.handle_keypress(key)
+        key = screen.getch()
+        editor.handle_keypress(key)
 
 if __name__ == "__main__":
+    curses.initscr()
+    curses.cbreak()
+    curses.noecho()
+    curses.set_escdelay(25)
     curses.wrapper(main)

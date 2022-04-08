@@ -1,5 +1,7 @@
 # buffer.py
 
+from statusline import *
+
 class Buffer:
     def __init__(self, lines, rows, cols):
         self.lines = lines # Buffer contents (text)
@@ -17,6 +19,8 @@ class Buffer:
         self.margin_right = 0 # Right cursor boundary offset
         self.margin_bottom = 0 # Bottom cursor boundary offset
 
+        self.statusline = Statusline(self)
+
     # Properties
     @property
     def bottom(self):
@@ -25,6 +29,19 @@ class Buffer:
     @property
     def right(self):
         return self.col_offset + self.cols - 1
+
+    # Insert character at the cursor position
+    def insert_char(self, cursor, char):
+        cur_line = self.lines.pop(cursor.row)
+        new_line = cur_line[:cursor.col] + char + cur_line[cursor.col:]
+        self.lines.insert(cursor.row, new_line)
+
+    def split_line(self, cursor):
+        cur_line = self.lines.pop(cursor.row)
+        new_line = cur_line[:cursor.col] + " " # I don't know why this works, but it does :shrug:
+        self.lines.insert(cursor.row, new_line)
+        self.lines.insert(cursor.row + 1, cur_line[cursor.col:])
+        cursor.hint = 0
 
     # Get total number of lines
     def line_count(self):

@@ -5,7 +5,7 @@ class Statusline:
         self.buffer = buffer # Which buffer this statusline belongs to
 
     def update(self, cursor):
-        statusline = f"= {cursor.mode} "
+        statusline = f"==[ {cursor.mode} ]"
 
         # Get percentage of the way the cursor is from the top of the buffer to the bottom
         percent = str(100 * ((cursor.row+1) / (self.buffer.line_count()))).split('.')[0] + "%"
@@ -13,11 +13,11 @@ class Statusline:
         if cursor.row == 0: percent = "TOP"
 
         # Calculate spaces needed to fill the middle of the statusline
-        spaces = self.buffer.cols - (len(cursor.mode) + len(str(cursor.col)) + len(str(cursor.row)) + len(percent) + 12)
+        spaces = self.buffer.cols - (len(cursor.mode) + (len(str(cursor.col))+1) + (len(str(cursor.row))+1) + len(percent) + 20)
 
         for i in range(spaces):
             statusline += "="
 
-        statusline += f" {percent} = {cursor.col}, {cursor.row} ="
+        statusline += f"[ {percent} ]==[ {cursor.col+1}, {cursor.row+1} ]=="
 
         return statusline

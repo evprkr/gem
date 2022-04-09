@@ -14,11 +14,11 @@ class Cursor:
     # Cursor Movement
     def move(self, key):
         if key == Keys.CursorLeft: # Left
-            if self.col > self.buffer.margin_left:
+            if self.col > 0:
                 self.col -= 1
                 self.hint = self.col
         if key == Keys.CursorRight: # Right
-            if self.col < len(self.buffer.lines[self.row]) - self.buffer.margin_right - 1:
+            if self.col < len(self.buffer.lines[self.row]) - self.buffer.margin_right:
                 self.col += 1
                 self.hint = self.col
         if key == Keys.CursorUp: # Up

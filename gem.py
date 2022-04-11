@@ -15,25 +15,31 @@ from color import *
 def main(screen):
     curses.set_escdelay(25)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file")
-    args = parser.parse_args()
+#    parser = argparse.ArgumentParser()
+#    parser.add_argument("file")
+#    args = parser.parse_args()
 
-    with open(args.file) as f:
-        contents = f.read().splitlines()
-#        contents = f.readlines()
+    if len(sys.argv) == 2:
+        filename = sys.argv[1]
+        try: 
+            with open(sys.argv[1]) as f:
+                contents = f.readlines()
+        except:
+            filename = sys.argv[1]
+            contents = ["\n"]
+    else: # If no arguments, create an empty, unnamed file // TODO Add some sort of landing screen here instead
+        filename = "No File"
+        contents = ["\n"]
 
     # Init Components
     max_lines = curses.LINES - 1
     max_cols = curses.COLS - 1
 
-    init_colors()
-
-    buffer = Buffer(contents, max_lines, max_cols)
-    cursor = Cursor(buffer, buffer.margin_top, buffer.margin_left)
+    buffer = Buffer(filename, contents, max_lines, max_cols)
+    cursor = Cursor(buffer, 0, 0)
     editor = Editor(screen, buffer, cursor)
 
-    debug_window = PopupDialog("Debug", ["There's no text here yet"], max_lines-1, max_cols, (1, 2), "bottom right")
+    debug_window = PopupDialog(max_lines-1, max_cols, "Debug", ["There's no text here yet"], "bottom right", (1, 2))
     editor.windows.append(debug_window)
 
     while not editor.exit:

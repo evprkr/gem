@@ -10,6 +10,13 @@ class Cursor:
         self.row = row # Cursor row position
         self.col = col # Cursor col position
         self.hint = 0 # Try to keep cursor col position between lines
+
+    # Move cursor to specific location
+    def goto(self, row, col):
+        self.row = row
+        self.col = col
+        self.hint = self.col
+        self.buffer.scroll(self)
  
     # Cursor Movement
     def move(self, key):
@@ -18,7 +25,7 @@ class Cursor:
                 self.col -= 1
                 self.hint = self.col
         if key == Keys.CursorRight: # Right
-            if self.col < len(self.buffer.lines[self.row]) - self.buffer.margin_right:
+            if self.col < len(self.buffer.lines[self.row]) - self.buffer.margin_right - 1:
                 self.col += 1
                 self.hint = self.col
         if key == Keys.CursorUp: # Up

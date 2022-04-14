@@ -8,9 +8,8 @@ Any planned features (listed below) are not guaranteed, but I'm hoping to at lea
 
 ## "Planned" Features
 * Customizable keyboard shortcuts that utilize a leader key for platform-agnosticism
-* Commandline with customizable commands
+* Commandline with customizable commands plus a bunch of useful built-in commands
 * Syntax highlighting for major languages
-* Statusline showing the current file, save status, cursor position, etc.
 * Tabline for keeping multiple buffers open and switching between them
 * Easy configuration done with YAML (because I like YAML)
 * Built-in parsing for custom color schemes (also made with YAML)
@@ -21,4 +20,4 @@ Any planned features (listed below) are not guaranteed, but I'm hoping to at lea
 Once getting the core functionality in place, I will likely move right into the plugin API. I'm thinking that things like the statusline, tabline, and file manager could be added as plugins. That would keep the base installation small and allow users to exclude features they won't use.
 
 ## Platform Support
-I'm developing Gem on macOS, but it should work fine on any Unix or Unix-like system. Right now, I have no *real* plans for supporting Windows, due to Python not having native support for curses in Windows. There is an alternative, that being [windows-curses][https://pypi.org/project/windows-curses/], so I might be inclined to add support for Windows in the future, depending on how much time and effort that will take. Considering this is just a hobby/learning experience for me right now, it's unlikely to happen unless I get really involved in making this a "real" thing.
+I'm developing Gem on macOS, but it should work fine on any Unix or Unix-like system. Right now, I have no *real* plans for supporting Windows, due to Python not having native support for curses in Windows. There is an alternative, that being windows-curses, so I might be inclined to add support for Windows in the future, depending on how much time and effort that will take. Considering this is just a hobby/learning experience for me right now, it's unlikely to happen unless I get really involved in making this a "real" thing.

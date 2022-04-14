@@ -84,7 +84,11 @@ class Buffer:
 
         cursor_pos = f"{cursor.row+1}:{cursor.col+1}"
         cursor_mode = f" {cursor.mode} "
-        buffer_pos = f"{int((float(cursor.row) / float(self.line_count-1)) * 100)}% "
+
+        if cursor.row == 0: buffer_pos = f"TOP "
+        elif cursor.row == self.line_count-1: buffer_pos = f"BOTTOM "
+        else: buffer_pos = f"{int((float(cursor.row) / float(self.line_count-1)) * 100)}% "
+
         if self.dirty: filename = f"{self.name} *"
         else: filename = f"{self.name}"
 

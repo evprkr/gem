@@ -154,6 +154,10 @@ cython_debug/
 
 # Other crap
 .DS_Store
+NOTES.md
+gemlog.txt
+src/test_files/
+archive/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

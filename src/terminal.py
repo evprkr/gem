@@ -16,10 +16,13 @@ class Terminal:
         self.quit = False
 
     # Add buffer to the terminal
-    def add_buffer(self, name, contents=[]):
-        buffer = Buffer(name, self.rows, self.cols, contents)
+    #def add_buffer(self, name, contents=[], rows=None, cols=None):
+    def add_buffer(self, buffer):
+        if not buffer.rows: buffer.rows = self.rows
+        if not buffer.cols: buffer.cols = self.cols
+        buffer.history.add(self.cursor, buffer.lines.copy())
         self.buffers.append(buffer)
-        log.write(f"Terminal: buffer '{name}' added to Terminal")
+        log.write(f"Terminal: buffer '{buffer.name}' added to Terminal")
 
         # If the cursor has no active buffer, set it to this one
         if self.cursor.buffer == None:
@@ -120,7 +123,6 @@ class Terminal:
                 if key in Key.Escape:
                     self.cursor.buffer.update_history(self.cursor)
                     self.cursor.mode = "NORMAL"
-                    #log.write("Terminal: cursor mode set to NORMAL")
 
                 elif key in Key.Backspace: self.cursor.buffer.backspace(self.cursor)
                 elif key == Key.InsDelete: self.cursor.buffer.delete_char(self.cursor)

@@ -8,6 +8,8 @@ from buffer import *
 from cursor import *
 from input import * # TODO Rename this file?
 
+from popup import *
+
 def main(screen):
     curses.set_escdelay(25)
 
@@ -33,10 +35,14 @@ def main(screen):
     cols = curses.COLS - 1
 
     # Init components
-    cursor = Cursor(); log.write("Cursor initialized")
-    terminal = Terminal(rows, cols, screen, cursor); log.write("Terminal initialized")
-    terminal.add_buffer(file, contents); log.write("Initial buffer initialized")
-    terminal.update_buffers(); log.write("Initial Terminal update completed")
+    cursor = Cursor(); log.write("Cursor initialized") # Create the cursor
+    terminal = Terminal(rows, cols, screen, cursor); log.write("Terminal initialized") # Create the terminal
+    terminal.add_buffer(Buffer(file, contents)); log.write("Initial buffer initialized") # Create the initial buffer
+    terminal.update(); log.write("Initial Terminal update completed") # Run an update loop before starting input loop
+
+    # Popup Testing
+    pop_contents = ["Be not afraid, ", "This is a test popup window.", "Goodbye."]
+    pop_buffer = Buffer("Testing", pop_contents)
 
     # Input loop
     log.write("Entering input loop")

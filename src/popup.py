@@ -40,5 +40,5 @@ class PopupWindow:
         # Buffer
         if self.buffer:
             self.buffer.update(screen, cursor, r_offset, c_offset)
-#            for row, line in enumerate(self.buffer.lines):
-#                screen.addstr(row, col, line)
+            for row, line in enumerate(self.buffer.lines):
+                screen.addstr(row, col, line)

@@ -5,11 +5,11 @@ from input import *
 from history import History
 
 class Buffer:
-    def __init__(self, name, rows, cols, lines):
+    def __init__(self, name, lines, rows=None, cols=None):
         self.name = name
+        self.lines = lines
         self.rows = rows
         self.cols = cols
-        self.lines = lines
 
         self.editable = True # If contents (lines) are mutable, defaults to `True`
 
@@ -49,30 +49,33 @@ class Buffer:
     def get_line(self, row):
         return self.lines[row]
 
+    # Resize buffer
+    def resize(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+
     # Update history
     def update_history(self, cursor):
         if not self.editable: return
-        if self.history.index > 1: self.history.fork()
-        cursor_pos = (cursor.row, cursor.col)
+        if self.history.index > 0: self.history.fork()
         lines_copy = self.lines.copy()
-        self.history.add(cursor_pos, lines_copy)
+        self.history.add(cursor, lines_copy)
 
     # Undo last action
     def undo(self, cursor):
         if not self.editable: return
-        if len(self.history.changes) - self.history.index > 0:
+        if self.history.index + 1 < len(self.history.changes):
             action = self.history.undo()
             self.lines = action.items.copy()
             cursor.goto(*action.cursor_pos)
 
     # Redo last undone action
     def redo(self, cursor):
-        if self.history.index > 1:
+        if self.history.index > 0:
             action = self.history.redo()
             self.lines = action.items.copy()
-            cursor.row, cursor.col = action.cursor_pos
+            cursor.goto(*action.cursor_pos)
             self.scroll(cursor)
-            log.write(action.cursor_pos)
 
     # Update buffer contents on the terminal screen
     def update(self, screen, cursor, r_offset=0, c_offset=0):
@@ -98,9 +101,13 @@ class Buffer:
         cursor_pos = f"{cursor.row+1}:{cursor.col+1}"
         cursor_mode = f" {cursor.mode} "
 
-        if cursor.row == 0: buffer_pos = f"TOP "
-        elif cursor.row == self.line_count-1: buffer_pos = f"BOTTOM "
-        else: buffer_pos = f"{int((float(cursor.row) / float(self.line_count-1)) * 100)}% "
+        try:
+            if cursor.row == 0: buffer_pos = f"TOP "
+            elif cursor.row == self.line_count-1: buffer_pos = f"BOTTOM "
+            else: buffer_pos = f"{int((float(cursor.row) / float(self.line_count-1)) * 100)}% "
+        except Exception as e:
+            log.write(f"Buffer: Failed to get buffer pos, exception: {e}")
+            buffer_pos = f"oops "
 
         if self.dirty: filename = f"{self.name} *"
         else: filename = f"{self.name}"

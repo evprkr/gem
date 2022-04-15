@@ -60,8 +60,11 @@ class Buffer:
             cursor.row, cursor.col = action.cursor_pos
 
     # Redo last undone action
-    def redo(self):
-        pass
+    def redo(self, cursor):
+        if self.history.index > 1:
+            action = self.history.redo()
+            self.lines = action.items.copy()
+            cursor.row, cursor.col = action.cursor_pos
 
     # Update buffer contents on the terminal screen
     def update(self, screen, cursor, r_offset=0, c_offset=0):

@@ -18,6 +18,10 @@ class History:
         self.index += 1
         return self.changes[-self.index]
 
+    def redo(self):
+        self.index -= 1
+        return self.changes[-self.index]
+
     def fork(self):
         for i in range(self.index-1):
             try: self.changes.pop(-1)

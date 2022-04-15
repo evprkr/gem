@@ -1,6 +1,8 @@
 import curses
 import platform
 from logger import *
+from input import *
+from history import History
 
 class Buffer:
     def __init__(self, name, rows, cols, lines):
@@ -10,6 +12,7 @@ class Buffer:
         self.lines = lines
 
         self.dirty = False
+        self.history = History()
 
         self.row_offset = 0
         self.col_offset = 0
@@ -21,10 +24,6 @@ class Buffer:
         self.margin_bottom = 0
 
         self.widgets = []
-
-        self.history = []
-        self.hist_idx = 0
-        self.hist_max = 5
 
     @property
     def bottom(self):
@@ -47,20 +46,22 @@ class Buffer:
         return self.lines[row]
 
     # Update history
-    def update_history(self):
-        if len(self.history) > self.hist_max: self.history.pop(0)
-        self.history.append(self.lines)
-        self.hist_idx = len(self.history)
+    def update_history(self, cursor):
+        if self.history.index > 1: self.history.fork()
+        cursor_pos = (cursor.row, cursor.col)
+        lines_copy = self.lines.copy()
+        self.history.add(cursor_pos, lines_copy)
 
     # Undo last action
-    def undo(self):
-        self.hist_idx -= 1
-        self.lines = self.history[self.hist_idx]
+    def undo(self, cursor):
+        if len(self.history.changes) - self.history.index > 0:
+            action = self.history.undo()
+            self.lines = action.items.copy()
+            cursor.row, cursor.col = action.cursor_pos
 
     # Redo last undone action
     def redo(self):
         pass
-        #self.hist_idx += 1
 
     # Update buffer contents on the terminal screen
     def update(self, screen, cursor, r_offset=0, c_offset=0):
@@ -169,12 +170,12 @@ class Buffer:
     # Add a new widget to the buffer
     def add_widget(self, widget):
         self.widgets.append(widget)
-        log.write(f"Widget {widget.name} added to Buffer '{self.name}'")
+        log.write(f"Buffer: widget {widget.name} added to Buffer '{self.name}'")
 
     # Remove a widget from the buffer
     def remove_widget(self, widget):
         self.widgets.remove(widget)
-        log.write(f"Widget {widget.name} removed from Buffer '{self.name}'")
+        log.write(f"Buffer: widget {widget.name} removed from Buffer '{self.name}'")
 
     # Scrolling
     def scroll(self, cursor, center=False):

@@ -19,7 +19,7 @@ class Terminal:
     def add_buffer(self, name, contents=[]):
         buffer = Buffer(name, self.rows, self.cols, contents)
         self.buffers.append(buffer)
-        log.write(f"Buffer '{name}' added to Terminal")
+        log.write(f"Terminal: buffer '{name}' added to Terminal")
 
         # If the cursor has no active buffer, set it to this one
         if self.cursor.buffer == None:
@@ -30,7 +30,7 @@ class Terminal:
         window = PopupWindow(row, col, title, buffer, anchor)
         if buffer: self.cursor.buffer = buffer
         self.windows.append(window)
-        log.write("New window created in Terminal")
+        log.write("Terminal: new window created")
 
     # Update everything in the terminal
     def update(self):
@@ -59,7 +59,7 @@ class Terminal:
         f.writelines(contents)
         f.close()
         buffer.dirty = False
-        log.write(f"Buffer '{buffer.name}' saved successfully")
+        log.write(f"Terminal: buffer '{buffer.name}' saved successfully")
 
     # Process key(s) passed from stdin
     def process_input(self, keys):
@@ -69,17 +69,23 @@ class Terminal:
 
             # Normal Mode
             if self.cursor.mode == "NORMAL":
-                if key == Key.ModeInsert: self.cursor.mode = "INSERT"; log.write("Cursor mode set to INSERT")
+                # Process Key
+                if key == Key.ModeInsert:
+                    self.cursor.mode = "INSERT"
 
-                elif key == Key.Delete or key == Key.InsDelete: self.cursor.buffer.delete_char(self.cursor)
+                elif key == Key.Delete or key == Key.InsDelete:
+                    self.cursor.buffer.delete_char(self.cursor)
+                    self.cursor.buffer.update_history(self.cursor)
 
                 elif key == Key.CursorLeft: self.cursor.left()
                 elif key == Key.CursorRight: self.cursor.right()
                 elif key == Key.CursorUp: self.cursor.up()
                 elif key == Key.CursorDown: self.cursor.down()
 
-                elif key == Key.LineDelete: self.cursor.buffer.delete_line(self.cursor)
-                elif key == Key.LineAppend: self.cursor.goto(self.cursor.row, self.cursor.line_end, "INSERT")
+                elif key == Key.LineAppend: self.cursor.goto(self.cursor.row, self.cursor.line_end, "INSERT"); 
+                elif key == Key.LineDelete:
+                    self.cursor.buffer.delete_line(self.cursor)
+                    self.cursor.buffer.update_history(self.cursor)
 
                 elif key == Key.JumpLineStart: self.cursor.goto(self.cursor.row, 0)
                 elif key == Key.JumpLineEnding: self.cursor.goto(self.cursor.row, self.cursor.line_end)
@@ -100,18 +106,24 @@ class Terminal:
                     while self.cursor.row > 0 and self.cursor.line != '\n':
                         self.cursor.up()
 
+                elif key == Key.UndoAction: self.cursor.buffer.undo(self.cursor)
+                elif key == Key.RedoAction: self.cursor.buffer.redo(self.cursor)
+
             # Insert Mode
             elif self.cursor.mode == "INSERT":
-                if key in Key.Escape: self.cursor.mode = "NORMAL"; log.write("Cursor mode set to NORMAL")
+                if key in Key.Escape:
+                    self.cursor.buffer.update_history(self.cursor)
+                    self.cursor.mode = "NORMAL"
+                    #log.write("Terminal: cursor mode set to NORMAL")
+
                 elif key in Key.Backspace: self.cursor.buffer.backspace(self.cursor)
                 elif key == Key.InsDelete: self.cursor.buffer.delete_char(self.cursor)
-                elif key == '\n': self.cursor.buffer.split_line(self.cursor)
-                else: self.cursor.buffer.insert_char(self.screen, self.cursor, key)
 
-                # Update Buffer History
-                if key not in Key.Escape: self.cursor.buffer.update_history()
+                elif key == '\n': self.cursor.buffer.split_line(self.cursor)
+
+                else: self.cursor.buffer.insert_char(self.screen, self.cursor, key)
 
         # Leader Sequences
         elif keys[0] == Key.Leader:
-            if keys == Seq.Quit: self.quit = True; log.write("Terminal exit flag enabled")
+            if keys == Seq.Quit: self.quit = True; log.write("Terminal: quit flag enabled")
             elif keys == Seq.Save: self.save_buffer(self.cursor.buffer)

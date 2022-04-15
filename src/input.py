@@ -22,8 +22,13 @@ class Key:
     PrevWordEnding = 'H'
     NextBlankLine = 'J'
     PrevBlankLine = 'K'
-    LineDelete = 'D'
+
+    # Text Manipulation
     LineAppend = 'A'
+    LineDelete = 'D'
+    UndoAction = 'z'
+    RedoAction = 'Z'
+    RepeatAction = '.'
 
     # Mode Switching
     ModeInsert = 'i'

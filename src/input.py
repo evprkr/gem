@@ -22,6 +22,8 @@ class Key:
     PrevWordEnding = 'H'
     NextBlankLine = 'J'
     PrevBlankLine = 'K'
+    BufferFirstRow = 'g'
+    BufferLastRow = 'G'
 
     # Text Manipulation
     LineAppend = 'A'

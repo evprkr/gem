@@ -106,6 +106,12 @@ class Terminal:
                     while self.cursor.row > 0 and self.cursor.line != '\n':
                         self.cursor.up()
 
+                elif key == Key.BufferFirstRow:
+                    self.cursor.goto(0, self.cursor.col)
+
+                elif key == Key.BufferLastRow:
+                    self.cursor.goto(self.cursor.buffer.line_count-1, self.cursor.col)
+
                 elif key == Key.UndoAction: self.cursor.buffer.undo(self.cursor)
                 elif key == Key.RedoAction: self.cursor.buffer.redo(self.cursor)
 

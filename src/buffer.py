@@ -57,7 +57,7 @@ class Buffer:
         if len(self.history.changes) - self.history.index > 0:
             action = self.history.undo()
             self.lines = action.items.copy()
-            cursor.row, cursor.col = action.cursor_pos
+            cursor.goto(*action.cursor_pos)
 
     # Redo last undone action
     def redo(self, cursor):
@@ -65,19 +65,22 @@ class Buffer:
             action = self.history.redo()
             self.lines = action.items.copy()
             cursor.row, cursor.col = action.cursor_pos
+            self.scroll(cursor)
+            log.write(action.cursor_pos)
 
     # Update buffer contents on the terminal screen
     def update(self, screen, cursor, r_offset=0, c_offset=0):
         # Print empty line chars
         for i in range(self.rows):
-            screen.addstr(r_offset + i, c_offset + 0, ' ~')
+            screen.addstr(r_offset + i, c_offset + 0, ' ~', curses.A_DIM)
 
         # Print lines from contents + line numbers
         for row, line in enumerate(self.lines[self.row_offset:self.row_offset + self.rows]):
             line_number = f"{row + self.row_offset + 1}"
             if row + self.row_offset + 1 < 10: line_number = " " + line_number
 
-            screen.addstr(r_offset + row, c_offset + 0, f"{line_number}")
+            if row == (cursor.row - self.row_offset): screen.addstr(r_offset + row, c_offset + 0, f"{line_number}")
+            else: screen.addstr(r_offset + row, c_offset + 0, f"{line_number}", curses.A_DIM)
 
             line_text = line[self.col_offset:self.col_offset + self.cols - 3] # Note: this -3 is here to make the end of the line match the end of the statusline which can't print in the last col for some reason
             screen.addstr(r_offset + row, c_offset + 3, f"{line_text}")
@@ -192,6 +195,12 @@ class Buffer:
             self.col_offset += 1
 
         # Scroll buffer to cursor when it goes outside the screen
+        while cursor.row > self.bottom:
+            self.row_offset += 1
+
+        while cursor.row < self.row_offset:
+            self.row_offset -= 1
+
         while cursor.col > self.right:
             self.col_offset += 1
 

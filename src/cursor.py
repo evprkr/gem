@@ -1,3 +1,5 @@
+from logger import *
+
 class Cursor:
     def __init__(self):
         self.mode = "NORMAL"
@@ -61,6 +63,5 @@ class Cursor:
     def goto(self, row, col, mode=None):
         if mode: self.mode = mode
         self.row = row
-        self.col = col
-        self.hint = self.col
+        self.col = min(self.hint, self.line_end)
         self.buffer.scroll(self)

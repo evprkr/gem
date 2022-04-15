@@ -31,6 +31,13 @@ class Cursor:
     def line_end(self):
         return len(self.buffer.get_line(self.row)) - 1
 
+    # Move cursor to position
+    def goto(self, row, col, mode=None):
+        if mode: self.mode = mode
+        self.row = row
+        self.col = col
+        self.buffer.scroll(self)
+
     # Move cursor up
     def up(self):
         if self.row > 0:
@@ -58,10 +65,3 @@ class Cursor:
             self.col += 1
             self.hint = self.col
             self.buffer.scroll(self)
-
-    # Move cursor to position
-    def goto(self, row, col, mode=None):
-        if mode: self.mode = mode
-        self.row = row
-        self.col = min(self.hint, self.line_end)
-        self.buffer.scroll(self)

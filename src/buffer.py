@@ -11,17 +11,21 @@ class Buffer:
         self.cols = cols
         self.lines = lines
 
+        self.editable = True # If contents (lines) are mutable, defaults to `True`
+
         self.dirty = False
         self.history = History()
 
         self.row_offset = 0
         self.col_offset = 0
 
-        self.scroll_offset_v = 5 # TODO Move these elsewhere, they don't belong here
+        self.scroll_offset_v = 5 # TODO Move these elsewhere, they don't belong here (gem_config.py?)
         self.scroll_offset_h = 10
 
         self.margin_left = 3
         self.margin_bottom = 0
+
+        self.prompt_open = False
 
         self.widgets = []
 
@@ -47,6 +51,7 @@ class Buffer:
 
     # Update history
     def update_history(self, cursor):
+        if not self.editable: return
         if self.history.index > 1: self.history.fork()
         cursor_pos = (cursor.row, cursor.col)
         lines_copy = self.lines.copy()
@@ -54,6 +59,7 @@ class Buffer:
 
     # Undo last action
     def undo(self, cursor):
+        if not self.editable: return
         if len(self.history.changes) - self.history.index > 0:
             action = self.history.undo()
             self.lines = action.items.copy()
@@ -110,6 +116,7 @@ class Buffer:
 
     # Insert character at cursor position
     def insert_char(self, screen, cursor, char):
+        if not self.editable: return
         if not self.dirty: self.dirty = True
         cur_line = self.lines.pop(cursor.row)
         new_line = cur_line[:cursor.col] + char + cur_line[cursor.col:]
@@ -119,6 +126,7 @@ class Buffer:
 
     # Delete character under the cursor
     def delete_char(self, cursor):
+        if not self.editable: return
         if not self.dirty: self.dirty = True
         row, col = cursor.row, cursor.col
         if (row, col) < (len(self.lines)-1, len(self.lines[row])-1):
@@ -134,6 +142,7 @@ class Buffer:
 
     # Delete the entire line under the cursor
     def delete_line(self, cursor):
+        if not self.editable: return
         if not self.dirty: self.dirty = True
         if cursor.buffer.line_count > 1: self.lines.pop(cursor.row)
         else: self.lines[cursor.row] = '\n'
@@ -141,6 +150,7 @@ class Buffer:
 
     # Backspace character left of the cursor
     def backspace(self, cursor):
+        if not self.editable: return
         if not self.dirty: self.dirty = True
         row, col = cursor.row, cursor.col
         if col == 0:
@@ -165,6 +175,7 @@ class Buffer:
 
     # Split line at cursor, moving the second half to the next line and the cursor with it
     def split_line(self, cursor):
+        if not self.editable: return
         if not self.dirty: self.dirty = True
         row, col = cursor.row, cursor.col
         cur_line = self.lines.pop(row)

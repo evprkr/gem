@@ -1,13 +1,13 @@
 from logger import *
 
 class Cursor:
-    def __init__(self):
+    def __init__(self, window):
+        self.window = window
         self.mode = "NORMAL"
         self.buffer = None
         self.row = 0
         self.col = 0
         self.hint = 0
-        self.blink = False
 
     @property # Current line in active buffer
     def line(self):
@@ -36,6 +36,7 @@ class Cursor:
         if mode: self.mode = mode
         self.row = row
         self.col = col
+        self.hint = self.col
         self.buffer.scroll(self)
 
     # Move cursor up

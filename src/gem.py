@@ -35,14 +35,31 @@ def main(screen):
     cols = curses.COLS - 1
 
     # Init components
-    cursor = Cursor(); log.write("Cursor initialized") # Create the cursor
+    cursor = Cursor(screen); log.write("Cursor initialized") # Create the cursor
     terminal = Terminal(rows, cols, screen, cursor); log.write("Terminal initialized") # Create the terminal
-    terminal.add_buffer(Buffer(file, contents)); log.write("Initial buffer initialized") # Create the initial buffer
-    terminal.update(); log.write("Initial Terminal update completed") # Run an update loop before starting input loop
+    terminal.add_buffer(Buffer(file, contents, terminal)); log.write("Initial buffer initialized") # Create the initial buffer
+
+    cmd_buff = Buffer("Prompt", ["DING DONG SCALLYWAGS\n"])
+    cmd_buff.cols = cols
+    cmd_buff.line_numbers = False
+    cmd_buff.empty_lines = False
+    cmd_buff.status_line = False
+
+#    terminal.add_window(PopupWindow(rows-2, 0, "Prompt", cmd_buff, screen, None, False, False))
 
     # Popup Testing
-    pop_contents = ["Be not afraid, ", "This is a test popup window.", "Goodbye."]
-    pop_buffer = Buffer("Testing", pop_contents)
+    #pop_contents = ["Be not afraid,", "This is a test popup window.", "", "Goodbye."]
+
+    #pop_buffer = Buffer("Testing", pop_contents)
+    #pop_buffer.editable = False
+    #pop_buffer.line_numbers = False
+    #pop_buffer.empty_lines = False
+    #pop_buffer.status_line = False
+
+    #terminal.add_window(PopupWindow(rows // 2, cols // 2, "Testing", pop_buffer, screen, "center"), False)
+
+    # Initial update
+    terminal.update(); log.write("Initial Terminal update completed") # Run an update loop before starting input loop
 
     # Input loop
     log.write("Entering input loop")
@@ -55,11 +72,25 @@ def main(screen):
         keys.append(k)
 
         # Handle leader sequence (normal mode only)
-        if terminal.cursor.mode == "NORMAL" and keys[0] == Key.Leader:
-            screen.timeout(250)
-            try: k = screen.getkey()
-            except: k = None
-            keys.append(k)
+        if keys[0] != None:
+            if terminal.cursor.mode == "NORMAL":
+                if keys[0] == Key.Leader:
+                    screen.timeout(250)
+                    try: k = screen.getkey()
+                    except: k = None
+                    keys.append(k)
+                else:
+                    for key in KeyList:
+                        if keys[0] == key:
+                            keys.append(None)
+                            break
+
+                    if len(keys) != 2:
+                        screen.timeout(-1)
+                        k = screen.getkey()
+                        keys.append(k)
+            else:
+                keys.append(None)
         else:
             keys.append(None)
 
@@ -68,6 +99,7 @@ def main(screen):
             terminal.process_input(keys)
             terminal.update()
 
+    curses.endwin()
     log.write("Input loop terminated")
 
 if __name__ == "__main__":

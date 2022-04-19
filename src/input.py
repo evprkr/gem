@@ -22,12 +22,11 @@ class Key:
     PrevWordEnding = 'H'
     NextBlankLine = 'J'
     PrevBlankLine = 'K'
-    BufferFirstRow = 'g'
     BufferLastRow = 'G'
 
     # Text Manipulation
     LineAppend = 'A'
-    LineDelete = 'D'
+    LineDelete = 'D' # TODO change to delete from cursor to end of line
     UndoAction = 'z'
     RedoAction = 'Z'
     RepeatAction = '.'
@@ -38,13 +37,29 @@ class Key:
     ModePrompt = ':'
     ModeSearch = '/'
 
+    # Window/Buffer Navigation
+    BufferCycle = 'w'
 
-# Leader Key Sequences
+KeyList = Key.__dict__.values()
+
+#for key in KeyList.copy():
+#    if key[0:2] == '__': KeyList.pop(KeyList.index(key))
+
+
+# Multi-Key Sequences
 # Shortcut performed by pressing a key within 250ms of the leader key (Key.Leader)
 class Seq:
     # File Operations
     Quit = [Key.Leader, 'q']
     Save = [Key.Leader, 's']
+
+    # Cursor Actions
+    BufferFirstRow = ['g', 'g']
+    LineDelete = ['d', 'd']
+
+SeqList = dir(Seq)
+for seq in SeqList.copy():
+    if seq[0:2] == '__': SeqList.pop(SeqList.index(seq))
 
 
 # Wait Key Sequences

@@ -19,13 +19,11 @@ class History:
     def add(self, cursor, items):
         action = Action((cursor.row, cursor.col), items)
         self.changes.insert(0, action)
-        log.write(self.changes)
 
     # Move to the previous item in the history
     def undo(self):
         self.index += 1
         return self.changes[self.index]
-        log.write(self.changes)
 
     # Move to the next item in the history, after undoing
     def redo(self):

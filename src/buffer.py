@@ -5,29 +5,43 @@ from input import *
 from history import History
 
 class Buffer:
-    def __init__(self, name, lines, rows=None, cols=None):
+    def __init__(self, name, lines, window=None, rows=None, cols=None):
         self.name = name
         self.lines = lines
-        self.rows = rows
-        self.cols = cols
+        self.window = window
 
-        self.editable = True # If contents (lines) are mutable, defaults to `True`
+        if not rows: self.rows = len(self.lines)
+        else: self.rows = rows
+
+        if not cols: self.cols = len(max(self.lines, key=len)) + 2
+        else: self.cols = cols
+
+        self.editable = True        # If contents (lines) are mutable, defaults to `True`
+        self.line_numbers = True    # If line numbers should be drawn (shifts contents +3 cols), defaults to `True`
+        self.empty_lines = True     # If empty lines (outside the buffer) should be indicated with a `~`, defaults to `True`
+        self.status_line = True     # If a statusline should be drawn (covers the last row of the buffer)
 
         self.dirty = False
         self.history = History()
 
-        self.row_offset = 0
-        self.col_offset = 0
+        self.row_offset = 0 # Vertical scroll offset
+        self.col_offset = 0 # Horizontal scroll offset
 
         self.scroll_offset_v = 5 # TODO Move these elsewhere, they don't belong here (gem_config.py?)
         self.scroll_offset_h = 10
 
-        self.margin_left = 3
+        self.margin_left = 3 
         self.margin_bottom = 0
+
+        self.row_shift = 0
+        self.col_shift = 0
 
         self.prompt_open = False
 
         self.widgets = []
+
+    def __repr__(self):
+        return f"[Buffer: '{self.name}' ({self.rows}, {self.cols}), {self.line_count} lines]"
 
     @property
     def bottom(self):
@@ -43,7 +57,7 @@ class Buffer:
 
     # Translate cursor position relative to buffer offets
     def translate_pos(self, cursor):
-        return cursor.row - self.row_offset, self.margin_left + (cursor.col - self.col_offset)
+        return self.margin_bottom + (cursor.row - self.row_offset) + self.row_shift, self.margin_left + (cursor.col - self.col_offset) + self.col_shift
 
     # Get a specific line from the buffer
     def get_line(self, row):
@@ -78,48 +92,54 @@ class Buffer:
             self.scroll(cursor)
 
     # Update buffer contents on the terminal screen
-    def update(self, screen, cursor, r_offset=0, c_offset=0):
+    def update(self, cursor):
         # Print empty line chars
-        for i in range(self.rows):
-            screen.addstr(r_offset + i, c_offset + 0, ' ~', curses.A_DIM)
+        if self.empty_lines:
+            for i in range(self.rows):
+                self.window.screen.addstr(i, 0, ' ~', curses.A_DIM)
 
-        # Print lines from contents + line numbers
+        # Print lines from contents + line numbers (if enabled)
         for row, line in enumerate(self.lines[self.row_offset:self.row_offset + self.rows]):
-            line_number = f"{row + self.row_offset + 1}"
-            if row + self.row_offset + 1 < 10: line_number = " " + line_number
+            if self.line_numbers:
+                line_number_offset = 3
 
-            if row == (cursor.row - self.row_offset): screen.addstr(r_offset + row, c_offset + 0, f"{line_number}")
-            else: screen.addstr(r_offset + row, c_offset + 0, f"{line_number}", curses.A_DIM)
+                line_number = f"{row + self.row_offset + 1}"
+                if row + self.row_offset + 1 < 10: line_number = " " + line_number
 
-            line_text = line[self.col_offset:self.col_offset + self.cols - 3] # Note: this -3 is here to make the end of the line match the end of the statusline which can't print in the last col for some reason
-            screen.addstr(r_offset + row, c_offset + 3, f"{line_text}")
+                if cursor.buffer == self and row == (cursor.row - self.row_offset): self.window.screen.addstr(row, 0, f"{line_number}")
+                else: self.window.screen.addstr(row, 0, f"{line_number}", curses.A_DIM)
+            else:
+                line_number_offset = 2
+
+            line_text = line[self.col_offset:self.col_offset + self.cols - line_number_offset]
+            self.window.screen.addstr(row, line_number_offset, f"{line_text}")
 
         # Print the status line # TODO Turn this into a widget
-        for i in range(self.cols):
-            screen.addstr(r_offset + self.rows, c_offset + i, ' ', curses.A_REVERSE)
+        if self.status_line:
+            for i in range(self.cols):
+                self.window.screen.addstr(self.rows, i, ' ', curses.A_REVERSE)
 
-        cursor_pos = f"{cursor.row+1}:{cursor.col+1}"
-        cursor_mode = f" {cursor.mode} "
+            cursor_pos = f"{cursor.row+1}:{cursor.col+1}"
+            cursor_mode = f" {cursor.mode} "
 
-        try:
-            if cursor.row == 0: buffer_pos = f"TOP "
-            elif cursor.row == self.line_count-1: buffer_pos = f"BOTTOM "
-            else: buffer_pos = f"{int((float(cursor.row) / float(self.line_count-1)) * 100)}% "
-        except Exception as e:
-            log.write(f"Buffer: Failed to get buffer pos, exception: {e}")
-            buffer_pos = f"oops "
+            try:
+                if cursor.row == 0: buffer_pos = f"TOP "
+                elif cursor.row == self.line_count-1: buffer_pos = f"BOTTOM "
+                else: buffer_pos = f"{int((float(cursor.row) / float(self.line_count-1)) * 100)}% "
+            except:
+                buffer_pos = f"oops "
 
-        if self.dirty: filename = f"{self.name} *"
-        else: filename = f"{self.name}"
+            if self.dirty: filename = f"{self.name} *"
+            else: filename = f"{self.name}"
 
-        screen.addstr(r_offset + self.rows, c_offset + 0, cursor_mode, curses.A_REVERSE | curses.A_BOLD)
-        screen.addstr(r_offset + self.rows, c_offset + len(cursor_mode), filename, curses.A_REVERSE)
-        screen.addstr(r_offset + self.rows, c_offset + self.cols-(len(cursor_pos)+1), cursor_pos, curses.A_REVERSE | curses.A_BOLD)
-        screen.addstr(r_offset + self.rows, c_offset + self.cols-((len(cursor_pos)+1) + len(buffer_pos)), buffer_pos, curses.A_REVERSE)
+            self.window.screen.addstr(self.rows, 0, cursor_mode, curses.A_REVERSE | curses.A_BOLD)
+            self.window.screen.addstr(self.rows, len(cursor_mode), filename, curses.A_REVERSE)
+            self.window.screen.addstr(self.rows, self.cols-(len(cursor_pos)+1), cursor_pos, curses.A_REVERSE | curses.A_BOLD)
+            self.window.screen.addstr(self.rows, self.cols-((len(cursor_pos)+1) + len(buffer_pos)), buffer_pos, curses.A_REVERSE)
 
         # Update and print all widgets
         for widget in self.widgets:
-            screen.addstr(widget.row, widget.col, *widget.update())
+            self.window.screen.addstr(widget.row, widget.col, *widget.update())
 
     # Insert character at cursor position
     def insert_char(self, screen, cursor, char):

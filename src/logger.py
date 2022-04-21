@@ -10,4 +10,4 @@ class Logger:
         with open(self.logfile, 'a') as f:
             f.write(f"[{str_time}] {message}\n")
 
-log = Logger("gemlog.txt")
+log = Logger("inklog.txt")

@@ -1,3 +1,5 @@
+#!/opt/homebrew/bin/python3
+
 import os, sys, time
 import argparse
 import curses

@@ -37,7 +37,7 @@ class Buffer:
         self.row_offset = 0 # Vertical scroll offset
         self.col_offset = 0 # Horizontal scroll offset
 
-        self.scroll_offset_v = 5 # TODO Move these elsewhere, they don't belong here (gem_config.py?)
+        self.scroll_offset_v = 5 # TODO Move these elsewhere, they don't belong here (ink_config.py?)
         self.scroll_offset_h = 10
 
         self.margin_top = 0

@@ -1,27 +1,32 @@
-# Misc  Notes
+# Misc Notes
 
 ## Planned Changes
-* Add more keyboard shortcuts
-* Add command line mode and some commands
-* Change scrolling buffer to offscreen cursor so it scrolls until the cursor is centered in the screen
-* Add popup "help" window for basic shortcuts (plugin?)
+    * Change scrolling buffer to offscreen cursor so it scrolls until the cursor is centered in the screen
+    * Add popup "help" window for basic shortcuts (plugin?)
+    * Implement new error handler everywhere, display errors on screen and write to log
+    * Implement prompt history
 
 ## Major Changes
-* Change text editor buffer into a widget of some kind
-* Make buffers more generic and widgets the important part
-* Create basic plugin API
-* Create basic color system
-* Create basic config system
-* Make popup "help" window searchable
+    * Change text editor buffer into a widget of some kind
+    * Make buffers more generic and widgets the important part (ambiguous)
+    * Create basic plugin API
+    * Create basic color system
+    * Create basic config system
+    * Make a help command to search documentation
 
-## Known Bugs
-* Cursor sometimes flickers in odd places when redrawing the screen during scrolling
-* Editor crashes when resizing the terminal
+# What Do I Do Now?
+    * Select Mode
+    * Search Mode
+    * Split Buffers
+    * Tabbed Buffers
+    * Improved History
+    * Repeat Action
 
+## Silly Ideas
+    * What if the prompt buffer could have rows added with `Shift + Enter` so you could actually write full scripts within the prompt?
 
-
-## Nonsense
-``````
+## Random Nonsense
+```
  _____  ________  ___
 |  __ \|  ___|  \/  |
 | |  \/| |__ |      |
@@ -33,3 +38,16 @@ ___ __  ___ ___ ___ __
 |_  |  | |   |  | | |_/
 |   |  | |   |  | | | \
 |__ |_/ _|_  |  |_| |  \
+
+
+        ###
+      ###.###
+    ###.....###
+  ###...###...###
+###....#####....###
+  ###...###...###
+    ###.....###
+      ###.###
+        ###
+
+```

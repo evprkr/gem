@@ -6,7 +6,7 @@ from logger import *
 from terminal import *
 from buffer import *
 from cursor import *
-from input import * # TODO Rename this file?
+from input import * # TODO Rename this file to something else, maybe shortcuts or hotkeys
 
 from popup import *
 
@@ -39,32 +39,13 @@ def main(screen):
     terminal = Terminal(rows, cols, screen, cursor); log.write("Terminal initialized") # Create the terminal
     terminal.add_buffer(Buffer(file, contents, terminal)); log.write("Initial buffer initialized") # Create the initial buffer
 
-    cmd_buff = Buffer("Prompt", ["DING DONG SCALLYWAGS\n"])
-    cmd_buff.cols = cols
-    cmd_buff.line_numbers = False
-    cmd_buff.empty_lines = False
-    cmd_buff.status_line = False
-
-#    terminal.add_window(PopupWindow(rows-2, 0, "Prompt", cmd_buff, screen, None, False, False))
-
-    # Popup Testing
-    #pop_contents = ["Be not afraid,", "This is a test popup window.", "", "Goodbye."]
-
-    #pop_buffer = Buffer("Testing", pop_contents)
-    #pop_buffer.editable = False
-    #pop_buffer.line_numbers = False
-    #pop_buffer.empty_lines = False
-    #pop_buffer.status_line = False
-
-    #terminal.add_window(PopupWindow(rows // 2, cols // 2, "Testing", pop_buffer, screen, "center"), False)
-
     # Initial update
     terminal.update(); log.write("Initial Terminal update completed") # Run an update loop before starting input loop
 
     # Input loop
     log.write("Entering input loop")
     while not terminal.quit:
-        screen.timeout(1000)
+        screen.timeout(250)
         keys = []
 
         try: k = screen.getkey()

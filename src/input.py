@@ -6,7 +6,7 @@ class Key:
     Escape = ('KEY_ESCAPE', '\x1b')
     Delete = 'x'; InsDelete = 'KEY_DC'
     Backspace = ('KEY_BACKSPACE', '\b', '\x7f') # Cover all the bases
-    Enter = 13
+    Enter = (13, '\n')
     Tab = '\t'
 
     # Cursor Movement
@@ -14,6 +14,10 @@ class Key:
     CursorDown = 'j'
     CursorUp = 'k'
     CursorRight = 'l'
+    ArrowUp = 'KEY_UP'
+    ArrowDown = 'KEY_DOWN'
+    ArrowLeft = 'KEY_LEFT'
+    ArrowRight = 'KEY_RIGHT'
 
     # Cursor Actions
     JumpLineStart = '('
@@ -41,9 +45,6 @@ class Key:
     BufferCycle = 'w'
 
 KeyList = Key.__dict__.values()
-
-#for key in KeyList.copy():
-#    if key[0:2] == '__': KeyList.pop(KeyList.index(key))
 
 
 # Multi-Key Sequences

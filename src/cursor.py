@@ -5,6 +5,7 @@ class Cursor:
         self.window = window
         self.mode = "NORMAL"
         self.buffer = None
+        self.prev_buffer = None
         self.row = 0
         self.col = 0
         self.hint = 0
@@ -34,6 +35,13 @@ class Cursor:
     # Move cursor to position
     def goto(self, row, col, mode=None):
         if mode: self.mode = mode
+
+        if row < 0: row = 0
+        if row > self.buffer.line_count - 1: row = self.buffer.line_count - 1
+
+        if col < 0: col = 0
+        if col > len(self.buffer.get_line(row)) - 1: col = len(self.buffer.get_line(row)) - 1
+
         self.row = row
         self.col = col
         self.hint = self.col
@@ -48,9 +56,9 @@ class Cursor:
 
     # Move cursor down
     def down(self):
-        if self.row < len(self.buffer.lines) - self.buffer.margin_bottom - 1: # TODO Make a method to get line count
+        if self.row < self.buffer.line_count - 1:
             self.row += 1
-            self.col = min(self.hint, len(self.buffer.lines[self.row]) - 1)
+            self.col = min(self.hint, len(self.line) - 1)
             self.buffer.scroll(self)
 
     # Move cursor left
@@ -62,7 +70,7 @@ class Cursor:
 
     # Move cursor right
     def right(self):
-        if self.col < len(self.buffer.lines[self.row]) - 1: # TODO Make a method to get line length
+        if self.col < len(self.line) - 1:
             self.col += 1
             self.hint = self.col
             self.buffer.scroll(self)

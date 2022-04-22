@@ -45,7 +45,7 @@ class Buffer:
         self.margin_left = 0
         self.margin_right = 0
 
-        if self.line_numbers: self.margin_left += 3
+        if self.line_numbers: self.margin_left += 4
         if self.status_line: self.margin_bottom += 1
 
         if self.border:
@@ -74,7 +74,7 @@ class Buffer:
 
     # Translate cursor position relative to buffer offets
     def translate_pos(self, cursor):
-        return self.margin_top + (self.cursor_row - self.row_offset) + self.row_shift, self.margin_left + (self.cursor_col - self.col_offset) + self.col_shift
+        return self.margin_top + (self.cursor_row - self.row_offset) + self.row_shift, self.margin_left + (self.cursor_col - self.col_offset) + self.col_shift + self.line_numbers
 
     # Get a specific line from the buffer
     def get_line(self, row):
@@ -121,33 +121,32 @@ class Buffer:
 
         status_mb = (self.rows - self.margin_bottom) + 1
 
-        if not self.line_numbers: gutter_ml = self.margin_left
-        else: gutter_ml = self.margin_left - 3
-
         # Print empty line chars
         if self.empty_lines:
             for i in range(self.margin_top, status_mb):
-                self.window.screen.addstr(i, gutter_ml, ' ~', curses.A_DIM)
+                self.window.screen.addstr(i, self.margin_left + 1, '~', curses.A_DIM)
 
         # Print lines from contents + line numbers (if enabled)
         for row, line in enumerate(self.lines[self.row_offset:self.row_offset + status_mb]):
             if self.line_numbers:
-                line_number_offset = 3 + gutter_ml
+                line_number_offset = self.margin_left + 2
+             
+                ln_len = len(str(row + self.row_offset + 1))
+                ln_pos = line_number_offset - ln_len - 2
 
                 line_number = f"{row + self.row_offset + 1}"
-                if row + self.row_offset + 1 < 10: line_number = " " + line_number
 
-                if cursor.buffer == self and row == (cursor.row - self.row_offset): self.window.screen.addstr(row + self.margin_top, gutter_ml, f"{line_number}")
-                else: self.window.screen.addstr(row + self.margin_top, gutter_ml, f"{line_number}", curses.A_DIM)
+                if cursor.buffer == self and row == (cursor.row - self.row_offset): self.window.screen.addstr(row + self.margin_top, ln_pos, f"{line_number}")
+                else: self.window.screen.addstr(row + self.margin_top, ln_pos, f"{line_number}", curses.A_DIM)
             else:
-                line_number_offset = 2 + self.margin_left
+                line_number_offset = self.margin_left + 3
 
             line_text = line[self.col_offset:self.col_offset + self.cols - line_number_offset]
-            self.window.screen.addstr(row + self.margin_top, line_number_offset, f"{line_text}")
+            self.window.screen.addstr(row + self.margin_top, line_number_offset - 1, f"{line_text}")
 
         # Print the status line # TODO Turn this into a widget
         if self.status_line:
-            for i in range(gutter_ml, self.cols):
+            for i in range(0, self.cols):
                 self.window.screen.addstr(status_mb, i, ' ', curses.A_REVERSE)
 
             cursor_pos = f"{cursor.row+1}:{cursor.col+1}"
@@ -163,7 +162,7 @@ class Buffer:
             if self.dirty: filename = f"{self.name} *"
             else: filename = f"{self.name}"
 
-            self.window.screen.addstr(status_mb, gutter_ml, cursor_mode, curses.A_REVERSE | curses.A_BOLD)
+            self.window.screen.addstr(status_mb, 0, cursor_mode, curses.A_REVERSE | curses.A_BOLD)
             self.window.screen.addstr(status_mb, len(cursor_mode) + self.margin_left, filename, curses.A_REVERSE)
             self.window.screen.addstr(status_mb, self.cols-(len(cursor_pos)+1) - self.margin_right, cursor_pos, curses.A_REVERSE | curses.A_BOLD)
             self.window.screen.addstr(status_mb, self.cols-((len(cursor_pos)+1) + len(buffer_pos)) - self.margin_right, buffer_pos, curses.A_REVERSE)
@@ -248,6 +247,23 @@ class Buffer:
         cur_line = self.lines.pop(row)
         self.lines.insert(row, cur_line[:col]+'\n')
         self.lines.insert(row + 1, cur_line[col:])
+
+        if cur_line.startswith(' '):
+            log.write("Line starts with space")
+            tabs = 0
+            i = 0
+            while cur_line[i] == ' ':
+                if i % 4 == 0: tabs += 1
+                log.write(f"space found, tabs {tabs}")
+                i += 1
+            log.write("no more spaces")
+           
+            if tabs > 0:
+                log.write(f"{tabs} tabs found")
+                for i in range(tabs * 4):
+                    self.insert_char(self.window.screen, cursor, ' ')
+                    log.write("inserted tab")
+
         cursor.hint = 0
         cursor.down()
 

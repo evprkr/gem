@@ -64,7 +64,7 @@ def main(screen):
                     keys.append(k)
                 else:
                     for key in KeyList:
-                        if keys[0] == key:
+                        if keys[0] in key:
                             keys.append(None)
                             break
 

@@ -50,10 +50,11 @@ class Terminal:
         cmd_buff = Buffer("Prompt", ['\n'], border=True)
         cmd_buff.cols = self.cols // 3
         cmd_buff.rows = 2
+        cmd_buff.scrollable_v = False
         cmd_buff.line_numbers = False
         cmd_buff.empty_lines = False
         cmd_buff.status_line = False
-        self.add_window(PopupWindow(self.rows//2, self.cols//2, "Prompt", cmd_buff, self.screen, "center", True, True))
+        self.add_window(PopupWindow(self.rows//2, self.cols//2, "Prompt", cmd_buff, self.screen, "center"))
         #log.write("Prompt window created")
 
     # Close the prompt and return focus to the previous buffer
@@ -223,13 +224,13 @@ class Terminal:
         # Leader Sequences
         # ------------------------------
         elif keys[0] == Key.Leader:
-            if keys == Seq.Quit: self.quit = True; log.write("Terminal: quit flag enabled")
-            elif keys == Seq.Save: self.save_buffer(self.cursor.buffer)
+            if keys == Seq.Save: self.save_buffer(self.cursor.buffer)
 
         # Other Sequences
         # ------------------------------
         elif len(keys) == 2:
-            if keys == Seq.BufferFirstRow: self.cursor.goto(0, self.cursor.col)
+            if keys == Seq.ForceQuit: self.quit = True; log.write("Terminal: quit flag enabled")
+            elif keys == Seq.BufferFirstRow: self.cursor.goto(0, self.cursor.col)
             elif keys == Seq.LineDelete:
                 self.cursor.buffer.delete_line(self.cursor)
                 self.cursor.buffer.update_history(self.cursor)

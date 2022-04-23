@@ -28,7 +28,7 @@ class CmdHandler:
             self.terminal.quit = True
 
         # Quick jump to any line
-        if cmd.isnumeric() and len(args) == 0:
+        elif cmd.isnumeric() and len(args) == 0:
             try:
                 self.terminal.close_prompt()
                 cursor.goto(int(cmd) - 1, 0)
@@ -52,6 +52,19 @@ class CmdHandler:
 #            if len(args) == 1: pass
 #            else:
 #                self.error = InvalidArgsError(f"wrong number of arguments, expected 1, got {len(args)}")
+
+        # Add blank lines to buffer
+        elif cmd in Cmd.AddLines:
+            if len(args) == 1:
+                try:
+                    num = int(args[0])
+                    self.terminal.close_prompt()
+                    for i in range(num):
+                        buffer.split_line(cursor)
+                except Exception as e:
+                    self.error = PythonError(f"*Python Error* {e}")
+            else:
+                self.error = InvalidArgsError(f"wrong number of arguments, expected 2, got {len(args)}")
 
         else: self.error = CmdNotFoundError(f"command '{cmd}' not found")
 

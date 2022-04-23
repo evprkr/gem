@@ -2,29 +2,25 @@ import curses
 from logger import *
 
 class PopupWindow:
-    def __init__(self, row, col, title, buffer, parent, anchor=None, print_border=True, print_title=True):
+    def __init__(self, row, col, title, buffer, parent, anchor=None):
         self.row = row
         self.col = col
         self.title = title
         self.buffer = buffer
         self.parent = parent
         self.anchor = anchor
-        self.print_border = print_border
-        self.print_title = print_title
 
         if not self.buffer.line_numbers: self.buffer.margin_left = 0
 
         # Set Width + Height
         if not self.buffer.rows: self.rows = len(self.buffer.lines)
-        elif self.print_border: self.rows = self.buffer.rows + 1
         else: self.rows = self.buffer.rows
         if not self.buffer.cols: self.cols = len(max(self.buffer.lines, key=len))
-        elif self.print_border: self.cols = self.buffer.cols + 1
         else: self.cols = self.buffer.cols
 
-        # Compensate for borders + status line
-        #if self.buffer.border: self.rows += 1
-        #if self.buffer.status_line: self.rows += 1
+        # Increase height if the buffer has a border or status line
+        if self.buffer.border: self.rows += 1
+        if self.buffer.status_line: self.rows += 1
 
         # Set Anchor
         if self.anchor == "center":

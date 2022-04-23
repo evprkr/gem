@@ -10,4 +10,7 @@ class Cmd:
     # Buffer Navigation
     Goto            = ('goto', 'go')                    # Jump to (row, col) in buffer
 
+    # Buffer Manipulation
+    AddLines        = ('addlines', 'al')                # Add blank lines to buffer
+
 #CmdList = Cmd.__dict__.values()

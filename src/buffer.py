@@ -26,11 +26,14 @@ class Buffer:
         self.cursor_col = 0
 
         # Buffer Settings
-        self.editable = True        # If contents (lines) are mutable, defaults to `True`
-        self.line_numbers = True    # If line numbers should be drawn (shifts contents +3 cols), defaults to `True`
-        self.empty_lines = True     # If empty lines (outside the buffer) should be indicated with a `~`, defaults to `True`
-        self.status_line = True     # If a statusline should be drawn (covers the last row of the buffer)
-        self.border = border        # Draw a border around the buffer
+        self.editable = True        # Contents (lines) are mutable, defaults to `True`
+        self.focusable = True       # Buffer can be focused by the cursor, defaults to `True`
+        self.scrollable_v = True    # Buffer can be scrolled vertically if rows exceeds the height, defaults to `True`
+        self.scrollable_h = True    # Buffer can be scrolled horizontall if cols exceeds the width, defaults to `True`
+        self.line_numbers = True    # Line numbers should be drawn (shifts contents +3 cols), defaults to `True`
+        self.empty_lines = True     # Empty lines (outside the buffer) should be indicated with a `~`, defaults to `True`
+        self.status_line = True     # Status line should be drawn (covers the last row of the buffer)
+        self.border = border        # Border box should be drawn around the buffer
         self.title = title          # Print the buffer name at the top left of the border
 
         # Margins and Offsets
@@ -123,8 +126,8 @@ class Buffer:
 
         # Print empty line chars
         if self.empty_lines:
-            for i in range(self.margin_top, status_mb):
-                self.window.screen.addstr(i, self.margin_left + 1, '~', curses.A_DIM)
+            for i in range(self.margin_top + self.line_count, status_mb):
+                self.window.screen.addstr(i, self.border, '~', curses.A_DIM)
 
         # Print lines from contents + line numbers (if enabled)
         for row, line in enumerate(self.lines[self.row_offset:self.row_offset + status_mb]):
@@ -243,6 +246,7 @@ class Buffer:
     def split_line(self, cursor):
         if not self.editable: return
         if not self.dirty: self.dirty = True
+        if self.line_count == 9999: return
         row, col = cursor.row, cursor.col
         cur_line = self.lines.pop(row)
         self.lines.insert(row, cur_line[:col]+'\n')
@@ -283,30 +287,13 @@ class Buffer:
         self.cursor_row = cursor.row
         self.cursor_col = cursor.col
 
-        # Up
-        if cursor.row <= (self.row_offset + self.scroll_offset_v) - 1 and self.row_offset > 0: self.row_offset -= 1
+        if self.scrollable_v:
+            while cursor.row <= (self.row_offset + self.scroll_offset_v) - 1 and self.row_offset > 0: self.row_offset -= 1
+            while cursor.row >= (self.bottom - self.scroll_offset_v) + 1 and self.bottom < len(self.lines) - 1: self.row_offset += 1
 
-        # Down
-        if cursor.row >= (self.bottom - self.scroll_offset_v) + 1 and self.bottom < len(self.lines) - 1: self.row_offset += 1
-
-        # Left
-        if cursor.col == (self.col_offset + self.scroll_offset_h) - 1 and self.col_offset > 0: self.col_offset -= 1
-
-        # Right
-        if cursor.col == (self.right - self.scroll_offset_h) + 1 and self.right < len(self.lines[cursor.row]) - 1: self.col_offset += 1
-
-        # Scroll buffer to cursor when it goes outside the screen
-        while cursor.row > self.bottom:
-            self.row_offset += 1
-
-        while cursor.row < self.row_offset:
-            self.row_offset -= 1
-
-        while cursor.col > self.right:
-            self.col_offset += 1
-
-        while cursor.col < self.col_offset:
-            self.col_offset -= 1
+        if self.scrollable_h:
+            while cursor.col <= (self.col_offset + self.scroll_offset_h) - 1 and self.col_offset > 0: self.col_offset -= 1
+            while cursor.col >= (self.right - self.scroll_offset_h) + 1 and self.right < len(self.lines[cursor.row]) + 1: self.col_offset += 1
 
         # TODO Center buffer scroll offset on cursor if `center` flag is enabled
         if center: pass

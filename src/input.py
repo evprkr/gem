@@ -45,13 +45,16 @@ class Key:
     BufferCycle = 'w'
 
 KeyList = Key.__dict__.values()
+SpecialKeys = (Key.Escape, Key.Delete, Key.Backspace, Key.Enter, Key.Tab)
 
 
 # Multi-Key Sequences
-# Shortcut performed by pressing a key within 250ms of the leader key (Key.Leader)
+# Performed either with two sequential keypresses or with a key pressed within 250ms after the Leader key
 class Seq:
+    # Special
+    ForceQuit = ['Q', 'Q']
+
     # File Operations
-    Quit = [Key.Leader, 'q']
     Save = [Key.Leader, 's']
 
     # Cursor Actions

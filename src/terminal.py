@@ -188,12 +188,18 @@ class Terminal:
             # ------------------------------
             elif self.cursor.mode == "INSERT":
                 if key in Key.Escape:
+                    self.cursor.buffer.clean_lines(self.cursor)
                     self.cursor.buffer.update_history(self.cursor)
                     self.cursor.mode = "NORMAL"
                     self.cursor.left()
 
                 elif key in Key.Backspace: self.cursor.buffer.backspace(self.cursor)
                 elif key == Key.InsDelete: self.cursor.buffer.delete_char(self.cursor)
+
+                elif key == Key.ArrowLeft: self.cursor.left()
+                elif key == Key.ArrowRight: self.cursor.right()
+                elif key == Key.ArrowUp: self.cursor.up()
+                elif key == Key.ArrowDown: self.cursor.down()
 
                 elif key == Key.Tab:
                     for i in range(4): self.cursor.buffer.insert_char(self.screen, self.cursor, ' ')

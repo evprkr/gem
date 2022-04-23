@@ -64,9 +64,14 @@ def main(screen):
                     keys.append(k)
                 else:
                     for key in KeyList:
-                        if keys[0] in key:
-                            keys.append(None)
-                            break
+                        if type(key) == tuple:
+                            if keys[0] in key:
+                                keys.append(None)
+                                break
+                        else:
+                            if keys[0] == key:
+                                keys.append(None)
+                                break
 
                     if len(keys) != 2:
                         screen.timeout(-1)

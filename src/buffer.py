@@ -88,28 +88,22 @@ class Buffer:
         self.rows = rows
         self.cols = cols
 
+    # Add a new widget to the buffer
+    def add_widget(self, widget):
+        self.widgets.append(widget)
+        log.write(f"Buffer: widget {widget.name} added to Buffer '{self.name}'")
+
+    # Remove a widget from the buffer
+    def remove_widget(self, widget):
+        self.widgets.remove(widget)
+        log.write(f"Buffer: widget {widget.name} removed from Buffer '{self.name}'")
+
     # Update history
     def update_history(self, cursor):
         if not self.editable: return
         if self.history.index > 0: self.history.fork()
         lines_copy = self.lines.copy()
         self.history.add(cursor, lines_copy)
-
-    # Undo last action
-    def undo(self, cursor):
-        if not self.editable: return
-        if self.history.index + 1 < len(self.history.changes):
-            action = self.history.undo()
-            self.lines = action.items.copy()
-            cursor.goto(*action.cursor_pos)
-
-    # Redo last undone action
-    def redo(self, cursor):
-        if self.history.index > 0:
-            action = self.history.redo()
-            self.lines = action.items.copy()
-            cursor.goto(*action.cursor_pos)
-            self.scroll(cursor)
 
     # Update buffer contents on the terminal screen
     def update(self, cursor):
@@ -178,6 +172,18 @@ class Buffer:
         # Update and print all widgets
         for widget in self.widgets:
             self.window.screen.addstr(widget.row, widget.col, *widget.update())
+
+    # Strip unnecessary whitespace from lines
+    def clean_lines(self, cursor):
+        lines_copy = self.lines.copy()
+
+        for row, line in enumerate(lines_copy):
+            if line.isspace():
+                self.lines[row] = '\n'
+                if row == cursor.row: cursor.goto(row, 0)
+            else: self.lines[row] = line.rstrip()
+            
+            if not self.lines[row].endswith('\n'): self.lines[row] += '\n'
 
     # Insert character at cursor position
     def insert_char(self, screen, cursor, char):
@@ -252,34 +258,38 @@ class Buffer:
         self.lines.insert(row, cur_line[:col]+'\n')
         self.lines.insert(row + 1, cur_line[col:])
 
+        # Match current line's tabs on the next line
         if cur_line.startswith(' '):
-            log.write("Line starts with space")
             tabs = 0
             i = 0
             while cur_line[i] == ' ':
                 if i % 4 == 0: tabs += 1
-                log.write(f"space found, tabs {tabs}")
                 i += 1
-            log.write("no more spaces")
            
             if tabs > 0:
-                log.write(f"{tabs} tabs found")
+                cursor.hint = tabs * 4
+                cursor.down()
                 for i in range(tabs * 4):
                     self.insert_char(self.window.screen, cursor, ' ')
-                    log.write("inserted tab")
+        else:
+            cursor.hint = 0
+            cursor.down()
 
-        cursor.hint = 0
-        cursor.down()
+    # Undo last action
+    def undo(self, cursor):
+        if not self.editable: return
+        if self.history.index + 1 < len(self.history.changes):
+            action = self.history.undo()
+            self.lines = action.items.copy()
+            cursor.goto(*action.cursor_pos)
 
-    # Add a new widget to the buffer
-    def add_widget(self, widget):
-        self.widgets.append(widget)
-        log.write(f"Buffer: widget {widget.name} added to Buffer '{self.name}'")
-
-    # Remove a widget from the buffer
-    def remove_widget(self, widget):
-        self.widgets.remove(widget)
-        log.write(f"Buffer: widget {widget.name} removed from Buffer '{self.name}'")
+    # Redo last undone action
+    def redo(self, cursor):
+        if self.history.index > 0:
+            action = self.history.redo()
+            self.lines = action.items.copy()
+            cursor.goto(*action.cursor_pos)
+            self.scroll(cursor)
 
     # Scrolling
     def scroll(self, cursor, center=False):

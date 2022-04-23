@@ -19,6 +19,8 @@ class CmdHandler:
         args = cmd.copy()[1:]
         cmd = cmd[0]
 
+        if cmd.endswith('!'): cmd = cmd[:-1] # strip '!' for now because my muscle memory is stupid
+
 
         # File Manipulation
         if cmd in Cmd.Quit: self.terminal.quit = True

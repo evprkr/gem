@@ -1,3 +1,5 @@
+from logger import *
+
 # Single Key Constants
 # Standard keys and shortcuts/actions performed with a single key
 class Key:
@@ -61,9 +63,7 @@ class Seq:
     BufferFirstRow = ['g', 'g']
     LineDelete = ['d', 'd']
 
-SeqList = dir(Seq)
-for seq in SeqList.copy():
-    if seq[0:2] == '__': SeqList.pop(SeqList.index(seq))
+SeqList = Seq.__dict__.values()
 
 
 # Wait Key Sequences

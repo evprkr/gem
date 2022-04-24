@@ -74,9 +74,15 @@ def main(screen):
                                 break
 
                     if len(keys) != 2:
-                        screen.timeout(-1)
-                        k = screen.getkey()
-                        keys.append(k)
+                        for seq in SeqList:
+                            if type(seq) == list:
+                                if keys[0] == seq[0]:
+                                    log.write(keys[0])
+                                    screen.timeout(-1)
+                                    k = screen.getkey()
+                                    keys.append(k)
+                        if len(keys) != 2:
+                            keys.append(None)
             else:
                 keys.append(None)
         else:

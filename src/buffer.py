@@ -1,5 +1,4 @@
 import curses
-import platform
 from logger import *
 from input import *
 from history import History
@@ -69,7 +68,8 @@ class Buffer:
 
     @property
     def right(self):
-        return self.col_offset + self.cols - self.margin_left
+        return (self.col_offset + self.cols) - self.margin_left - self.line_numbers
+        #return self.col_offset + self.cols - self.margin_left
 
     @property
     def line_count(self):
@@ -108,14 +108,11 @@ class Buffer:
     # Update buffer contents on the terminal screen
     def update(self, cursor):
         # Print background
-        for r in range(0, self.rows):
+        for r in range(0, self.rows + self.border):
             for c in range(0, self.cols):
                 self.window.screen.insch(r, c, ' ')
 
         # Set some margins based on enabled settings
-        if not self.border: line_offset = 0
-        else: line_offset = 1
-
         status_mb = (self.rows - self.margin_bottom) + 1
 
         # Print empty line chars
@@ -303,7 +300,7 @@ class Buffer:
 
         if self.scrollable_h:
             while cursor.col <= (self.col_offset + self.scroll_offset_h) - 1 and self.col_offset > 0: self.col_offset -= 1
-            while cursor.col >= (self.right - self.scroll_offset_h) + 1 and self.right < len(self.lines[cursor.row]) + 1: self.col_offset += 1
+            while cursor.col >= (self.right - self.scroll_offset_h) - 1: self.col_offset += 1
 
         # TODO Center buffer scroll offset on cursor if `center` flag is enabled
         if center: pass

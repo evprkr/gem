@@ -10,6 +10,7 @@ class PopupWindow:
         self.parent = parent
         self.anchor = anchor
 
+        # Compensate for line numbers
         if not self.buffer.line_numbers: self.buffer.margin_left = 0
 
         # Set Width + Height

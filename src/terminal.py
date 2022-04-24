@@ -47,7 +47,7 @@ class Terminal:
     def open_prompt(self):
         self.cursor.prev_buffer = self.cursor.buffer
         self.cursor.mode = "PROMPT"
-        cmd_buff = Buffer("Prompt", ['\n'], border=True)
+        cmd_buff = Buffer("Prompt", ['\n'], border=True, scroll_offsets=(0, 0))
         cmd_buff.cols = self.cols // 3
         cmd_buff.rows = 2
         cmd_buff.scrollable_v = False
@@ -242,6 +242,4 @@ class Terminal:
                 self.cursor.buffer.update_history(self.cursor)
 
             elif keys[0] == Wait.Replace:
-                self.cursor.buffer.delete_char(self.cursor)
-                self.cursor.buffer.insert_char(self.screen, self.cursor, keys[1])
-                self.cursor.buffer.update_history(self.cursor)
+                self.cursor.buffer.replace_char(self.cursor, keys[1])

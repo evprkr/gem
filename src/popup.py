@@ -10,9 +10,6 @@ class PopupWindow:
         self.parent = parent
         self.anchor = anchor
 
-        # Compensate for line numbers
-        if not self.buffer.line_numbers: self.buffer.margin_left = 0
-
         # Set Width + Height
         if not self.buffer.rows: self.rows = len(self.buffer.lines)
         else: self.rows = self.buffer.rows
@@ -32,7 +29,7 @@ class PopupWindow:
             self.col -= self.cols
 
         self.buffer.row_shift = self.row
-        self.buffer.col_shift = self.col + 2
+        self.buffer.col_shift = self.col
 
         # Window
         self.screen = self.parent.derwin(self.rows, self.cols, self.row, self.col)

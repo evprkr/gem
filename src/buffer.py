@@ -4,7 +4,7 @@ from input import *
 from history import History
 
 class Buffer:
-    def __init__(self, name, lines, window=None, rows=None, cols=None, border=False, title=True):
+    def __init__(self, name, lines, window=None, rows=None, cols=None, border=False, title=True, scroll_offsets=(5, 10)):
         self.name = name
         self.lines = lines
         self.window = window
@@ -31,24 +31,22 @@ class Buffer:
         self.scrollable_h = True    # Buffer can be scrolled horizontall if cols exceeds the width, defaults to `True`
         self.line_numbers = True    # Line numbers should be drawn (shifts contents +3 cols), defaults to `True`
         self.empty_lines = True     # Empty lines (outside the buffer) should be indicated with a `~`, defaults to `True`
-        self.status_line = True     # Status line should be drawn (covers the last row of the buffer)
-        self.border = border        # Border box should be drawn around the buffer
+        self.border = True        # Border box should be drawn around the buffer
         self.title = title          # Print the buffer name at the top left of the border
 
         # Margins and Offsets
         self.row_offset = 0 # Vertical scroll offset
         self.col_offset = 0 # Horizontal scroll offset
 
-        self.scroll_offset_v = 5 # TODO Move these elsewhere, they don't belong here (ink_config.py?)
-        self.scroll_offset_h = 10
+        self.scroll_offset_v = scroll_offsets[0] # TODO Move these elsewhere, they don't belong here (ink_config.py?)
+        self.scroll_offset_h = scroll_offsets[1]
 
         self.margin_top = 0
         self.margin_bottom = 0
         self.margin_left = 0
         self.margin_right = 0
 
-        if self.line_numbers: self.margin_left += 4
-        if self.status_line: self.margin_bottom += 1
+        if self.line_numbers: self.margin_left += 5
 
         if self.border:
             self.margin_top += 1
@@ -75,9 +73,61 @@ class Buffer:
     def line_count(self):
         return len(self.lines)
 
+
+    # Update buffer contents on the terminal screen
+    def update(self, cursor):
+        # Update Margins
+        self.margin_top = 0
+        self.margin_bottom = 0
+        self.margin_left = 0
+        self.margin_right = 0
+
+        if self.line_numbers: self.margin_left += 5
+
+        if self.border:
+            self.margin_top += 1
+            self.margin_bottom += 1
+            self.margin_left += 2
+            self.margin_right += 1
+
+        # Print background
+        for r in range(0, self.rows):
+            for c in range(0, self.cols):
+                self.window.screen.insch(r, c, ' ')
+
+        # Print empty line chars
+        if self.empty_lines:
+            for i in range(0, self.rows):
+                self.window.screen.addstr(i, self.border, '~', curses.A_DIM)
+
+        # Print line numbers + contents
+        for row, line in enumerate(self.lines[self.row_offset:self.row_offset + (self.rows - self.margin_bottom)]):
+            if self.line_numbers:
+                line_number = f"{row + self.row_offset + 1}"
+                for i in range(5 - len(line_number)):
+                    line_number = " " + line_number
+
+                # Highlight current line number in active buffer
+                if cursor.buffer == self and row == cursor.row - self.row_offset: self.window.screen.addstr(row + self.margin_top, 0, line_number)
+                else: self.window.screen.addstr(row + self.margin_top, 0, line_number, curses.A_DIM)
+
+            line_text = line[self.col_offset:self.col_offset + self.cols - self.margin_left]
+            self.window.screen.addstr(row + self.margin_top, self.margin_left, line_text)
+
+        # Print border
+        if self.border:
+            self.window.screen.box()
+            if self.title: self.window.screen.addstr(0, 1, f" {self.name} ")
+
+        # Update + Print all widgets
+        for widget in self.widgets:
+            self.window.screen.addstr(widget.row, widget.col, *widget.update())
+
+
     # Translate cursor position relative to buffer offets
     def translate_pos(self, cursor):
-        return self.margin_top + (self.cursor_row - self.row_offset) + self.row_shift, self.margin_left + (self.cursor_col - self.col_offset) + self.col_shift + self.line_numbers
+        return (((cursor.row - self.row_offset) + self.margin_top) + self.row_shift,
+                ((cursor.col - self.col_offset) + self.margin_left) + self.col_shift)
 
     # Get a specific line from the buffer
     def get_line(self, row):
@@ -104,71 +154,6 @@ class Buffer:
         if self.history.index > 0: self.history.fork()
         lines_copy = self.lines.copy()
         self.history.add(cursor, lines_copy)
-
-    # Update buffer contents on the terminal screen
-    def update(self, cursor):
-        # Print background
-        for r in range(0, self.rows + self.border):
-            for c in range(0, self.cols):
-                self.window.screen.insch(r, c, ' ')
-
-        # Set some margins based on enabled settings
-        status_mb = (self.rows - self.margin_bottom) + 1
-
-        # Print empty line chars
-        if self.empty_lines:
-            for i in range(self.margin_top + self.line_count, status_mb):
-                self.window.screen.addstr(i, self.border, '~', curses.A_DIM)
-
-        # Print lines from contents + line numbers (if enabled)
-        for row, line in enumerate(self.lines[self.row_offset:self.row_offset + status_mb]):
-            if self.line_numbers:
-                line_number_offset = self.margin_left + 2
-             
-                ln_len = len(str(row + self.row_offset + 1))
-                ln_pos = line_number_offset - ln_len - 2
-
-                line_number = f"{row + self.row_offset + 1}"
-
-                if cursor.buffer == self and row == (cursor.row - self.row_offset): self.window.screen.addstr(row + self.margin_top, ln_pos, f"{line_number}")
-                else: self.window.screen.addstr(row + self.margin_top, ln_pos, f"{line_number}", curses.A_DIM)
-            else:
-                line_number_offset = self.margin_left + 3
-
-            line_text = line[self.col_offset:self.col_offset + self.cols - line_number_offset]
-            self.window.screen.addstr(row + self.margin_top, line_number_offset - 1, f"{line_text}")
-
-        # Print the status line # TODO Turn this into a widget
-        if self.status_line:
-            for i in range(0, self.cols):
-                self.window.screen.addstr(status_mb, i, ' ', curses.A_REVERSE)
-
-            cursor_pos = f"{cursor.row+1}:{cursor.col+1}"
-            cursor_mode = f" {cursor.mode} "
-
-            try:
-                if cursor.row == 0: buffer_pos = f"TOP "
-                elif cursor.row == self.line_count - 2: buffer_pos = f"BOTTOM "
-                else: buffer_pos = f"{int((float(cursor.row) / float(self.line_count - 1)) * 100)}% "
-            except:
-                buffer_pos = f"712% "
-
-            if self.dirty: filename = f"{self.name} *"
-            else: filename = f"{self.name}"
-
-            self.window.screen.addstr(status_mb, 0, cursor_mode, curses.A_REVERSE | curses.A_BOLD)
-            self.window.screen.addstr(status_mb, len(cursor_mode) + self.margin_left, filename, curses.A_REVERSE)
-            self.window.screen.addstr(status_mb, self.cols-(len(cursor_pos)+1) - self.margin_right, cursor_pos, curses.A_REVERSE | curses.A_BOLD)
-            self.window.screen.addstr(status_mb, self.cols-((len(cursor_pos)+1) + len(buffer_pos)) - self.margin_right, buffer_pos, curses.A_REVERSE)
-
-        # Print box
-        if self.border:
-            self.window.screen.box()
-            if self.title: self.window.screen.addstr(0, 1, f" {self.name} ")
-
-        # Update and print all widgets
-        for widget in self.widgets:
-            self.window.screen.addstr(widget.row, widget.col, *widget.update())
 
     # Strip unnecessary whitespace from lines
     def clean_lines(self, cursor):
@@ -207,6 +192,15 @@ class Buffer:
                 next_line = self.lines.pop(row)
                 new_line = cur_line[:-1] + next_line
                 self.lines.insert(row, new_line)
+
+    # Replace character under cursor
+    def replace_char(self, cursor, screen, char):
+        if not self.editable: return
+        if not self.dirty: self.dirty = True
+
+        self.delete_char(cursor)
+        self.insert_char(self.screen, self.cursor, keys[1])
+        cursor.buffer.update_history(self.cursor)
 
     # Delete the entire line under the cursor
     def delete_line(self, cursor):

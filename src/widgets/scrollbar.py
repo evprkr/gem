@@ -1,4 +1,4 @@
-# Spinner animation that changes frame each time the update method is called
+# Displays a scrollbar (non-interactive) on the last col of the buffer to show scroll distance
 
 import curses
 from logger import *
@@ -12,5 +12,4 @@ class Scrollbar(Widget):
 
 
     def update(self):
-
         return self.char, curses.A_REVERSE

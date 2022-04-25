@@ -31,7 +31,7 @@ class Buffer:
         self.scrollable_h = True    # Buffer can be scrolled horizontall if cols exceeds the width, defaults to `True`
         self.line_numbers = True    # Line numbers should be drawn (shifts contents +3 cols), defaults to `True`
         self.empty_lines = True     # Empty lines (outside the buffer) should be indicated with a `~`, defaults to `True`
-        self.border = True        # Border box should be drawn around the buffer
+        self.border = border        # Border box should be drawn around the buffer
         self.title = title          # Print the buffer name at the top left of the border
 
         # Margins and Offsets
@@ -41,19 +41,13 @@ class Buffer:
         self.scroll_offset_v = scroll_offsets[0] # TODO Move these elsewhere, they don't belong here (ink_config.py?)
         self.scroll_offset_h = scroll_offsets[1]
 
+        # Text Position Offsets
         self.margin_top = 0
         self.margin_bottom = 0
         self.margin_left = 0
         self.margin_right = 0
 
-        if self.line_numbers: self.margin_left += 5
-
-        if self.border:
-            self.margin_top += 1
-            self.margin_bottom += 1
-            self.margin_left += 1
-            self.margin_right += 1
-
+        # Cursor Position Offset
         self.row_shift = 0
         self.col_shift = 0
 
@@ -67,7 +61,6 @@ class Buffer:
     @property
     def right(self):
         return (self.col_offset + self.cols) - self.margin_left - self.line_numbers
-        #return self.col_offset + self.cols - self.margin_left
 
     @property
     def line_count(self):
@@ -82,13 +75,13 @@ class Buffer:
         self.margin_left = 0
         self.margin_right = 0
 
-        if self.line_numbers: self.margin_left += 5
+        if self.line_numbers: self.margin_left += 6
 
         if self.border:
             self.margin_top += 1
             self.margin_bottom += 1
             self.margin_left += 2
-            self.margin_right += 1
+            self.margin_right += 2
 
         # Print background
         for r in range(0, self.rows):
@@ -104,7 +97,7 @@ class Buffer:
         for row, line in enumerate(self.lines[self.row_offset:self.row_offset + (self.rows - self.margin_bottom)]):
             if self.line_numbers:
                 line_number = f"{row + self.row_offset + 1}"
-                for i in range(5 - len(line_number)):
+                for i in range((self.margin_left - 1) - len(line_number)):
                     line_number = " " + line_number
 
                 # Highlight current line number in active buffer
@@ -121,6 +114,7 @@ class Buffer:
 
         # Update + Print all widgets
         for widget in self.widgets:
+            widget_lines = widget.update()
             self.window.screen.addstr(widget.row, widget.col, *widget.update())
 
 

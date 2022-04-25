@@ -115,7 +115,8 @@ class Buffer:
         # Update + Print all widgets
         for widget in self.widgets:
             widget_lines = widget.update()
-            self.window.screen.addstr(widget.row, widget.col, *widget.update())
+            for row, line in enumerate(widget_lines):
+                self.window.screen.addstr(widget.row, widget.col, *widget.update())
 
 
     # Translate cursor position relative to buffer offets

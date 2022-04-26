@@ -47,13 +47,12 @@ class Terminal:
     def open_prompt(self):
         self.cursor.prev_buffer = self.cursor.buffer
         self.cursor.mode = "PROMPT"
-        cmd_buff = Buffer("Prompt", ['\n'], border=True, scroll_offsets=(0, 0))
+        cmd_buff = Buffer("Prompt", ['\n'], border=True, statusline=False, scroll_offsets=(0, 0))
         cmd_buff.cols = self.cols // 3
         cmd_buff.rows = 2
         cmd_buff.scrollable_v = False
         cmd_buff.line_numbers = False
         cmd_buff.empty_lines = False
-        cmd_buff.status_line = False
         self.add_window(PopupWindow(self.rows//2, self.cols//2, "Prompt", cmd_buff, self.screen, "center"))
         #log.write("Prompt window created")
 

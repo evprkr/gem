@@ -18,7 +18,7 @@ class PopupWindow:
 
         # Increase height if the buffer has a border or status line
         if self.buffer.border: self.rows += 1
-        if self.buffer.status_line: self.rows += 1
+        if self.buffer.statusline: self.rows += 1
 
         # Set Anchor
         if self.anchor == "center":

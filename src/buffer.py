@@ -3,8 +3,12 @@ from logger import *
 from input import *
 from history import History
 
+from widgets.statusline import Statusline
+
+
+# Base Buffer Object - Contained inside a Window (or the Terminal), populated by Widgets to alter functionality
 class Buffer:
-    def __init__(self, name, lines, window=None, rows=None, cols=None, border=False, title=True, scroll_offsets=(5, 10)):
+    def __init__(self, name, lines, window=None, rows=None, cols=None, border=False, title=True, statusline=True, scroll_offsets=(5, 10)):
         self.name = name
         self.lines = lines
         self.window = window
@@ -21,18 +25,20 @@ class Buffer:
         self.widgets = []
 
         # Cursor Memory
+        self.cursor_mode = None
         self.cursor_row = 0
         self.cursor_col = 0
 
         # Buffer Settings
-        self.editable = True        # Contents (lines) are mutable, defaults to `True`
-        self.focusable = True       # Buffer can be focused by the cursor, defaults to `True`
-        self.scrollable_v = True    # Buffer can be scrolled vertically if rows exceeds the height, defaults to `True`
-        self.scrollable_h = True    # Buffer can be scrolled horizontall if cols exceeds the width, defaults to `True`
-        self.line_numbers = True    # Line numbers should be drawn (shifts contents +3 cols), defaults to `True`
-        self.empty_lines = True     # Empty lines (outside the buffer) should be indicated with a `~`, defaults to `True`
-        self.border = border        # Border box should be drawn around the buffer
-        self.title = title          # Print the buffer name at the top left of the border
+        self.editable = True            # Contents (lines) are mutable, defaults to `True`
+        self.focusable = True           # Buffer can be focused by the cursor, defaults to `True`
+        self.scrollable_v = True        # Buffer can be scrolled vertically if rows exceeds the height, defaults to `True`
+        self.scrollable_h = True        # Buffer can be scrolled horizontall if cols exceeds the width, defaults to `True`
+        self.line_numbers = True        # Line numbers should be drawn (shifts contents +3 cols), defaults to `True`
+        self.empty_lines = True         # Empty lines (outside the buffer) should be indicated with a `~`, defaults to `True`
+        self.border = border            # Border box should be drawn around the buffer
+        self.title = title              # Print the buffer name at the top left of the border
+        self.statusline = statusline    # Add a statusline widget to the last line of the buffer
 
         # Margins and Offsets
         self.row_offset = 0 # Vertical scroll offset
@@ -50,6 +56,11 @@ class Buffer:
         # Cursor Position Offset
         self.row_shift = 0
         self.col_shift = 0
+
+        # Widgets
+        if self.statusline:
+            statusline = Statusline("Statusline", self, self.window.rows, 0)
+            self.add_widget(statusline)
 
     def __repr__(self):
         return f"[Buffer: '{self.name}' ({self.rows}, {self.cols}), {self.line_count} lines]"
@@ -83,6 +94,11 @@ class Buffer:
             self.margin_left += 2
             self.margin_right += 2
 
+        # Update Cursor Memory
+        self.cursor_mode = cursor.mode
+        self.cursor_row = cursor.row
+        self.cursor_col = cursor.col
+
         # Print background
         for r in range(0, self.rows):
             for c in range(0, self.cols):
@@ -112,11 +128,8 @@ class Buffer:
             self.window.screen.box()
             if self.title: self.window.screen.addstr(0, 1, f" {self.name} ")
 
-        # Update + Print all widgets
-        for widget in self.widgets:
-            widget_lines = widget.update()
-            for row, line in enumerate(widget_lines):
-                self.window.screen.addstr(widget.row, widget.col, *widget.update())
+        # Update all widgets
+        for widget in self.widgets: widget.update()
 
 
     # Translate cursor position relative to buffer offets
@@ -136,12 +149,12 @@ class Buffer:
     # Add a new widget to the buffer
     def add_widget(self, widget):
         self.widgets.append(widget)
-        log.write(f"Buffer: widget {widget.name} added to Buffer '{self.name}'")
+        log.write(f"Buffer: widget '{widget.name}' added to Buffer '{self.name}'")
 
     # Remove a widget from the buffer
     def remove_widget(self, widget):
         self.widgets.remove(widget)
-        log.write(f"Buffer: widget {widget.name} removed from Buffer '{self.name}'")
+        log.write(f"Buffer: widget '{widget.name}' removed from Buffer '{self.name}'")
 
     # Update history
     def update_history(self, cursor):
@@ -279,10 +292,6 @@ class Buffer:
 
     # Scrolling
     def scroll(self, cursor, center=False):
-        # Update Cursor Memory
-        self.cursor_row = cursor.row
-        self.cursor_col = cursor.col
-
         if self.scrollable_v:
             while cursor.row <= (self.row_offset + self.scroll_offset_v) - 1 and self.row_offset > 0: self.row_offset -= 1
             while cursor.row >= (self.bottom - self.scroll_offset_v) + 1 and self.bottom < len(self.lines) - 1: self.row_offset += 1

@@ -38,8 +38,7 @@ def main(screen):
     cols = curses.COLS - 1
 
     # Clear log
-    try: os.remove("inklog.txt")
-    except: pass
+    log.erase()
 
     # Init components
     cursor = Cursor(screen); log.write("Cursor initialized") # Create the cursor
@@ -104,3 +103,4 @@ if __name__ == "__main__":
     log.write("Application started")
     curses.wrapper(main)
     log.write("Application exited successfully")
+    if terminal.delete_log: log.delete()

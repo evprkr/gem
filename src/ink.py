@@ -98,9 +98,9 @@ def main(screen):
 
     curses.endwin()
     log.write("Input loop terminated")
+    log.write("Application exited successfully")
+    if terminal.delete_log: log.delete()
 
 if __name__ == "__main__":
     log.write("Application started")
     curses.wrapper(main)
-    log.write("Application exited successfully")
-    if terminal.delete_log: log.delete()

@@ -18,6 +18,7 @@ class Terminal:
         self.buffers = []
 
         self.quit = False
+        self.delete_log = True # Deletes `inklog.txt` upon a successful exit
 
     def __repr__(self):
         return f"[Main Terminal, contains: '{self.buffers}' and '{self.windows}']"

@@ -8,7 +8,7 @@ from widgets.statusline import Statusline
 
 # Base Buffer Object - Contained inside a Window (or the Terminal), populated by Widgets to alter functionality
 class Buffer:
-    def __init__(self, name, lines, window=None, rows=None, cols=None, border=False, title=True, statusline=True, scroll_offsets=(5, 10)):
+    def __init__(self, name, lines, window=None, rows=None, cols=None, editable=True, focusable=False, scrollable_v=True, scrollable_h=True, line_numbers=True, empty_lines=True, border=False, title=True, statusline=True, scroll_offsets=(5, 10)):
         self.name = name
         self.lines = lines
         self.window = window
@@ -30,15 +30,15 @@ class Buffer:
         self.cursor_col = 0
 
         # Buffer Settings
-        self.editable = True            # Contents (lines) are mutable, defaults to `True`
-        self.focusable = True           # Buffer can be focused by the cursor, defaults to `True`
-        self.scrollable_v = True        # Buffer can be scrolled vertically if rows exceeds the height, defaults to `True`
-        self.scrollable_h = True        # Buffer can be scrolled horizontall if cols exceeds the width, defaults to `True`
-        self.line_numbers = True        # Line numbers should be drawn (shifts contents +3 cols), defaults to `True`
-        self.empty_lines = True         # Empty lines (outside the buffer) should be indicated with a `~`, defaults to `True`
-        self.border = border            # Border box should be drawn around the buffer
-        self.title = title              # Print the buffer name at the top left of the border
-        self.statusline = statusline    # Add a statusline widget to the last line of the buffer
+        self.editable = editable            # Contents (lines) are mutable, defaults to `True`
+        self.focusable = focusable          # Buffer can be focused by the cursor, defaults to `True`
+        self.scrollable_v = scrollable_v    # Buffer can be scrolled vertically if rows exceeds the height, defaults to `True`
+        self.scrollable_h = scrollable_h    # Buffer can be scrolled horizontall if cols exceeds the width, defaults to `True`
+        self.line_numbers = line_numbers    # Line numbers should be drawn (shifts contents +3 cols), defaults to `True`
+        self.empty_lines = empty_lines      # Empty lines (outside the buffer) should be indicated with a `~`, defaults to `True`
+        self.border = border                # Border box should be drawn around the buffer
+        self.title = title                  # Print the buffer name at the top left of the border
+        self.statusline = statusline        # Add a statusline widget to the last line of the buffer
 
         # Margins and Offsets
         self.row_offset = 0 # Vertical scroll offset
@@ -93,11 +93,6 @@ class Buffer:
             self.margin_bottom += 1
             self.margin_left += 2
             self.margin_right += 2
-
-        # Update Cursor Memory
-        self.cursor_mode = cursor.mode
-        self.cursor_row = cursor.row
-        self.cursor_col = cursor.col
 
         # Print background
         for r in range(0, self.rows):

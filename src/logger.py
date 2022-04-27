@@ -6,7 +6,7 @@ class Logger:
 
     def write(self, message):
         time = datetime.now()
-        str_time = time.strftime("%m/%d/%Y, %H:%M:%S")
+        str_time = time.strftime("%H:%M:%S")
         with open(self.logfile, 'a') as f:
             f.write(f"[{str_time}] {message}\n")
 

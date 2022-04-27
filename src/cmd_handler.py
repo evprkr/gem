@@ -1,9 +1,13 @@
 # Command Handler
 # Handles processing and executing of all commands
 
+from buffer import *
 from logger import *
+from popup import *
 from commands import *
 from errors import *
+
+from widgets.logviewer import LogViewer
 
 class CmdHandler:
     def __init__(self, terminal):
@@ -67,6 +71,19 @@ class CmdHandler:
                     self.error = PythonError(f"*Python Error* {e}")
             else:
                 self.error = InvalidArgsError(f"wrong number of arguments, expected 2, got {len(args)}")
+
+        elif cmd in Cmd.LogViewerToggle:
+            lv_found = False
+            for win in self.terminal.windows:
+                if win.title == "LogViewer":
+                    self.terminal.remove_window(win)
+                    lv_found = True
+                    break
+
+            if not lv_found:
+                log_buff = Buffer("LogViewer", ['\n'], rows=8, cols=self.terminal.cols+1, editable=False, focusable=False, statusline=False, line_numbers=False, empty_lines=False, border=True, scroll_offsets=(0, 0))
+                log_buff.add_widget(LogViewer("LogViewer", log_buff, "inklog.txt"))
+                self.terminal.add_window(PopupWindow(self.terminal.rows, 0, "LogViewer", log_buff, self.terminal.screen, "bottom left"), steal_focus=False)
 
         else: self.error = CmdNotFoundError(f"command '{cmd}' not found")
 

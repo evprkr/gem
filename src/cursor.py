@@ -32,6 +32,12 @@ class Cursor:
     def line_end(self):
         return len(self.buffer.get_line(self.row)) - 1
 
+    # Update buffer's cursor memory
+    def update_memory(self):
+        self.buffer.cursor_row = self.row
+        self.buffer.cursor_col = self.col
+        self.buffer.cursor_mode = self.mode
+
     # Move cursor to position
     def goto(self, row, col, mode=None):
         if mode: self.mode = mode
@@ -46,6 +52,7 @@ class Cursor:
         self.col = col
         self.hint = self.col
         self.buffer.scroll(self)
+        self.update_memory()
 
     # Move cursor up
     def up(self):
@@ -53,6 +60,7 @@ class Cursor:
             self.row -= 1
             self.col = min(self.hint, len(self.buffer.lines[self.row]) - 1)
             self.buffer.scroll(self)
+            self.update_memory()
 
     # Move cursor down
     def down(self):
@@ -60,6 +68,7 @@ class Cursor:
             self.row += 1
             self.col = min(self.hint, len(self.line) - 1)
             self.buffer.scroll(self)
+            self.update_memory()
 
     # Move cursor left
     def left(self):
@@ -67,6 +76,7 @@ class Cursor:
             self.col -= 1
             self.hint = self.col
             self.buffer.scroll(self)
+            self.update_memory()
 
     # Move cursor right
     def right(self):
@@ -74,3 +84,4 @@ class Cursor:
             self.col += 1
             self.hint = self.col
             self.buffer.scroll(self)
+            self.update_memory()

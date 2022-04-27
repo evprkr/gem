@@ -13,4 +13,7 @@ class Cmd:
     # Buffer Manipulation
     AddLines        = ('addlines', 'al')                # Add blank lines to buffer
 
+    # LogViewer
+    LogViewerToggle = ('logviewer', 'lv')               # Toggle LogViewer popup window
+
 #CmdList = Cmd.__dict__.values()

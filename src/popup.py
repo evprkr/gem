@@ -24,6 +24,8 @@ class PopupWindow:
         if self.anchor == "center":
             self.row -= self.rows // 2
             self.col -= self.cols // 2
+        elif self.anchor == "bottom left":
+            self.row -= self.rows
         elif self.anchor == "bottom right":
             self.row -= self.rows
             self.col -= self.cols

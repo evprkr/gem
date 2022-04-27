@@ -11,6 +11,7 @@ from cursor import *
 from input import * # TODO Rename this file to something else, maybe shortcuts or hotkeys
 
 from popup import *
+from widgets.logviewer import *
 
 def main(screen):
     curses.set_escdelay(25)
@@ -33,8 +34,12 @@ def main(screen):
         log.write("No file name passed as argument, new file created")
 
     # Terminal size at startup
-    rows = curses.LINES - 1
+    rows = curses.LINES - 1 # TODO remove -1 and deal with the resulting assault of bugs
     cols = curses.COLS - 1
+
+    # Clear log
+    try: os.remove("inklog.txt")
+    except: pass
 
     # Init components
     cursor = Cursor(screen); log.write("Cursor initialized") # Create the cursor
@@ -77,7 +82,6 @@ def main(screen):
                         for seq in SeqList:
                             if type(seq) == list:
                                 if keys[0] == seq[0]:
-                                    log.write(keys[0])
                                     screen.timeout(-1)
                                     k = screen.getkey()
                                     keys.append(k)

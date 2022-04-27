@@ -22,6 +22,25 @@ class Terminal:
     def __repr__(self):
         return f"[Main Terminal, contains: '{self.buffers}' and '{self.windows}']"
 
+    # Update everything in the terminal
+    def update(self):
+        self.update_buffers()
+        self.screen.move(*self.cursor.buffer.translate_pos(self.cursor))
+
+    # Update all buffers in the terminal
+    def update_buffers(self):
+        self.screen.erase()
+        #log.write("Terminal: updating buffers...")
+        for buffer in self.buffers:
+            buffer.update(self.cursor)
+            #log.write(f"Buffer '{buffer.name}' updated successfully")
+
+    # Update all windows in the terminal
+    def update_windows(self):
+        #log.write("Terminal: updating windows...")
+        for window in self.windows:
+            window.update()
+
     # Add buffer to the terminal
     def add_buffer(self, buffer, fill=True):
         if fill: buffer.rows = self.rows
@@ -43,18 +62,23 @@ class Terminal:
         self.buffers.append(window.buffer)
         #log.write(f"Terminal: new window created, buffer '{window.buffer.name}' added to buffers.")
 
+    # Remove window from the terminal
+    def remove_window(self, window):
+        if self.cursor.buffer == window.buffer:
+            self.cursor.buffer = self.cursor.prev_buffer
+        self.windows.remove(window)
+        self.buffers.remove(window.buffer)
+        log.write("Terminal: window '{window.title}' removed from Terminal")
+
     # Create and enter a prompt window
     def open_prompt(self):
         self.cursor.prev_buffer = self.cursor.buffer
         self.cursor.mode = "PROMPT"
-        cmd_buff = Buffer("Prompt", ['\n'], border=True, statusline=False, scroll_offsets=(0, 0))
+        cmd_buff = Buffer("Prompt", ['\n'], scrollable_v=False, line_numbers=False, empty_lines=False, border=True, statusline=False, scroll_offsets=(0, 0))
         cmd_buff.cols = self.cols // 3
         cmd_buff.rows = 2
-        cmd_buff.scrollable_v = False
-        cmd_buff.line_numbers = False
-        cmd_buff.empty_lines = False
         self.add_window(PopupWindow(self.rows//2, self.cols//2, "Prompt", cmd_buff, self.screen, "center"))
-        #log.write("Prompt window created")
+        log.write("Prompt window created")
 
     # Close the prompt and return focus to the previous buffer
     def close_prompt(self):
@@ -66,7 +90,7 @@ class Terminal:
             self.buffers.pop(buff_idx)
             self.windows.pop(win_idx)
             self.cursor.mode = "NORMAL"
-            #log.write("Prompt window destroyed")
+            log.write("Prompt window destroyed")
         except:
             log.write("Terminal: failed to close prompt, likely closed by CmdHandler")
 
@@ -92,26 +116,6 @@ class Terminal:
 
         self.cursor.goto(row, col)
         self.cursor.buffer.scroll(self.cursor)
-
-    # Update everything in the terminal
-    def update(self):
-        self.update_buffers()
-        self.screen.move(*self.cursor.buffer.translate_pos(self.cursor))
-
-    # Update all buffers in the terminal
-    def update_buffers(self):
-        #log.write("Terminal: updating buffers...")
-        self.screen.erase()
-        for buffer in self.buffers:
-        #    if buffer.window == self:
-            buffer.update(self.cursor)
-                #log.write(f"Buffer '{buffer.name}' updated successfully")
-
-    # Update all windows in the terminal
-    def update_windows(self):
-        #log.write("Terminal: updating windows...")
-        for window in self.windows:
-            window.update()
 
     # Save contents of buffer to a file
     def save_buffer(self, buffer):

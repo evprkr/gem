@@ -92,6 +92,7 @@ class Terminal:
         if len(window.contents) == 0: window.contents = ['\n']
         window.title = os.path.basename(file)
         window.path = file
+
         self.highlighter.match_lexer(window.path)
 
     # Save the current file

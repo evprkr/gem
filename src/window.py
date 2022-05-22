@@ -39,7 +39,6 @@ class Window:
         self.readonly = readonly
 
         # "Static" Configs - Set by the settings found in the inkrc file or default values
-        self.hlsyntax = self.parent.config.hlsyntax
         self.tabstop = self.parent.config.tabstop
         self.autotabs = self.parent.config.autotabs
         self.bksptabs = self.parent.config.bksptabs
@@ -48,8 +47,8 @@ class Window:
         self.hscrolloffset = self.parent.config.hscrolloffset
 
         # Syntax Highlighting
-        self.language = None
         self.hlsyntax = self.parent.hlsyntax
+        self.language = None
 
         # Calculate Margins
         self.upper_edge = 0 + self.margins[0]
@@ -216,8 +215,11 @@ class Window:
 #                if self.cursor_mode == "LINE SELECT" and self.parent.cursor.sel_start_row - 1 <= row <= self.cursor_row - self.row_offset:
 #                    self.screen.insstr(self.upper_edge + row, self.left_edge, line_text, curses.A_REVERSE)
 #                else:
-                tagged_text = self.parent.highlighter.hl(line_text)
-                self.parent.colorizer.print_syntax(self, self.upper_edge + row, self.left_edge, tagged_text)
+                try:
+                    tagged_text = self.parent.highlighter.hl(line_text)
+                    self.parent.colorizer.print_syntax(self, self.upper_edge + row, self.left_edge, tagged_text)
+                except:
+                    self.hlsyntax = False # THIS IS A REALLY STUPID WORKAROUND FIX # TODO PLEASE FIX THIS
             else:
                 self.screen.insstr(self.upper_edge + row, self.left_edge, line_text)
 

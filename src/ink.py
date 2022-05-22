@@ -26,7 +26,6 @@ def _process_arguments(argv: list[str] | None = None) -> Namespace:
     parser.add_argument('filepath', help='path to an editable file', nargs='?', default=None)
     return parser.parse_args(argv)
 
-
 # Main Process
 def main(screen, args):
     curses.start_color()

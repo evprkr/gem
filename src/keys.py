@@ -1,13 +1,14 @@
-from logger import *
+# Ink Editor - keys.py
+# github.com/leftbones/ink
 
 # Single Key Constants
-# Standard keys and shortcuts/actions performed with a single key
+# Standard keys and hotkeys performed with a single key
 class Key:
     # Important Keys
-    Leader = ' '
+    Leader = ' ' # TODO Load from config file
     Escape = ('KEY_ESCAPE', '\x1b')
     Delete = 'x'; InsDelete = 'KEY_DC'
-    Backspace = ('KEY_BACKSPACE', '\b', '\x7f') # Cover all the bases
+    Backspace = ('KEY_BACKSPACE', '\b', '\x7f')
     Enter = (13, '\n')
     Tab = '\t'
 
@@ -28,7 +29,7 @@ class Key:
     PrevWordEnding = 'H'
     NextBlankLine = 'J'
     PrevBlankLine = 'K'
-    BufferLastRow = 'G'
+    WindowLastRow = 'G'
 
     # Text Manipulation
     LineAppend = 'A'
@@ -40,11 +41,14 @@ class Key:
     # Mode Switching
     ModeInsert = 'i'
     ModeSelect = 's'
+    ModeLineSelect = 'S'
     ModePrompt = ':'
     ModeSearch = '/'
 
-    # Window/Buffer Navigation
-    BufferCycle = 'w'
+    # Window Navigation
+    WindowCycle = 'w'
+    ToggleSidebar = 'T'
+    ToggleTabSwitcher = '\t'
 
 KeyList = Key.__dict__.values()
 SpecialKeys = (Key.Escape, Key.Delete, Key.Backspace, Key.Enter, Key.Tab)
@@ -56,11 +60,8 @@ class Seq:
     # Special
     ForceQuit = ['Q', 'Q']
 
-    # File Operations
-    Save = [Key.Leader, 's']
-
     # Cursor Actions
-    BufferFirstRow = ['g', 'g']
+    WindowFirstRow = ['g', 'g']
     LineDelete = ['d', 'd']
 
 SeqList = Seq.__dict__.values()
@@ -70,3 +71,5 @@ SeqList = Seq.__dict__.values()
 # Single key shortcuts that wait for a second specific key to be pressed to perform an action
 class Wait:
     Replace = 'r'
+
+WaitList = Wait.__dict__.values()

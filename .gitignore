@@ -155,8 +155,9 @@ cython_debug/
 # Other crap
 .DS_Store
 NOTES.md
-gemlog.txt
-src/test_files/
+inklog.txt
+src/test/
+src/other/
 archive/
 
 # PyCharm

@@ -1,69 +1,84 @@
 #!/usr/bin/env python3
 
-import os, sys, time
-import argparse
+# Ink Editor - ink.py
+# github.com/leftbones/ink
+
+from __future__ import annotations
+
+import os, sys
+import traceback
 import curses
 
-from logger import *
-from terminal import *
-from buffer import *
-from cursor import *
-from input import * # TODO Rename this file to something else, maybe shortcuts or hotkeys
+from termcolor import cprint
+from argparse import ArgumentParser, Namespace
 
-from popup import *
-from widgets.logviewer import *
+from logger import log
 
-def main(screen):
-    curses.set_escdelay(25)
+from terminal import Terminal
+from window import Window
 
-    # Load file or create new empty file
-    if len(sys.argv) == 2:
-        file = sys.argv[1]
+from keys import *
 
-        try:
-            with open(file) as f:
-                contents = f.readlines()
-                log.write(f"Data read from file '{file}'")
-        except:
-            file = sys.argv[1]
-            contents = ['\n']
-            log.write(f"File '{file}' not found, new file created")
-    else:
-        file = "New File"
-        contents = ['\n']
-        log.write("No file name passed as argument, new file created")
 
-    # Terminal size at startup
-    rows = curses.LINES - 1 # TODO remove -1 and deal with the resulting assault of bugs
-    cols = curses.COLS - 1
+# Argument Parsing
+def _process_arguments(argv: list[str] | None = None) -> Namespace:
+    parser = ArgumentParser(prog='ink')
+    parser.add_argument('filepath', help='path to an editable file', nargs='?', default=None)
+    return parser.parse_args(argv)
 
-    # Clear log
+
+# Main Process
+def main(screen, args):
+    curses.start_color()
+    curses.use_default_colors()
+    curses.set_escdelay(250)
+    screen.timeout(250)
+
     log.erase()
 
-    # Init components
-    cursor = Cursor(screen); log.write("Cursor initialized") # Create the cursor
-    terminal = Terminal(rows, cols, screen, cursor); log.write("Terminal initialized") # Create the terminal
-    terminal.add_buffer(Buffer(file, contents, terminal)); log.write("Initial buffer initialized") # Create the initial buffer
+    if not args.filepath: args.filepath = 'New File'
+    filename = os.path.basename(args.filepath)
 
-    # Initial update
-    terminal.update(); log.write("Initial Terminal update completed") # Run an update loop before starting input loop
+    # Create Terminal instance
+    terminal = Terminal(screen, curses.LINES, curses.COLS, args.filepath)
 
-    # Input loop
-    log.write("Entering input loop")
-    while not terminal.quit:
-        screen.timeout(250)
+    # Create an empty window
+    terminal.add_window(
+        title = "New File",
+        contents = ['\n'],
+        row = 0,
+        col = 0,
+        nrows = terminal.nrows,
+        ncols = terminal.ncols,
+        box = True,
+        statusline = True,
+        linenumbers = True,
+        emptylines = True,
+    )
+
+    # Load file from arguments
+    try: terminal.do_open(args.filepath, terminal.windows[-1])
+    except FileNotFoundError:
+        terminal.send_alert("Error", [f"File {args.filepath} not found!\n", "Editing new file.\n"], 5)
+        terminal.cursor.window.title = args.filepath
+        terminal.cursor.window.dirty = True
+
+    terminal.print()
+
+    # Main input loop
+    while not terminal.exit:
+        terminal.screen.timeout(250)
         keys = []
 
-        try: k = screen.getkey()
+        try: k = terminal.screen.getkey()
         except: k = None
         keys.append(k)
 
-        # Handle leader sequence (normal mode only)
-        if keys[0] != None:
-            if terminal.cursor.mode == "NORMAL":
+        # Handle multi-key sequences (normal mode and list mode only)
+        if keys[0] != None and keys[0] not in Key.Escape:
+            if terminal.cursor.mode in ["NORMAL", "LIST"]:
                 if keys[0] == Key.Leader:
-                    screen.timeout(250)
-                    try: k = screen.getkey()
+                    try: k = terminal.screen.getkey()
                     except: k = None
                     keys.append(k)
                 else:
@@ -78,11 +93,17 @@ def main(screen):
                                 break
 
                     if len(keys) != 2:
+                        for wait in WaitList:
+                            if type(wait) == str:
+                                if keys[0] == wait:
+                                    terminal.screen.timeout(-1)
+                                    k = terminal.screen.getkey()
+                                    keys.append(k)
                         for seq in SeqList:
                             if type(seq) == list:
                                 if keys[0] == seq[0]:
-                                    screen.timeout(-1)
-                                    k = screen.getkey()
+                                    terminal.screen.timeout(-1)
+                                    k = terminal.screen.getkey()
                                     keys.append(k)
                         if len(keys) != 2:
                             keys.append(None)
@@ -91,16 +112,40 @@ def main(screen):
         else:
             keys.append(None)
 
-        # Send input to terminal, skip if there is no valid input
-        if keys != [None, None]:
+        # Send input to terminal to be processed
+        try:
             terminal.process_input(keys)
-            terminal.update()
+            terminal.print()
+        except Exception:
+            tb = traceback.format_exc()
+
+            terminal.screen.clear()
+            terminal.screen.refresh()
+            terminal.screen.timeout(-1)
+
+            curses.reset_shell_mode()
+
+            cprint("*** Ink has encountered an error! ***\n", attrs=['reverse'])
+            print("Don't worry, your work is not lost! Here's some info on what happened...\n")
+            print(tb)
+
+            print("Press any key to continue...")
+
+            curses.raw()
+            curses.napms(1000)
+
+            terminal.screen.getkey()
+
+            curses.flushinp()
+            curses.reset_prog_mode()
+
+            terminal.screen.clear()
+            terminal.screen.refresh()
+            terminal.screen.timeout(250)
 
     curses.endwin()
-    log.write("Input loop terminated")
-    log.write("Application exited successfully")
-    if terminal.delete_log: log.delete()
+    if terminal.deletelog: log.delete()
 
-if __name__ == "__main__":
-    log.write("Application started")
-    curses.wrapper(main)
+if __name__ == '__main__':
+    args = _process_arguments(sys.argv[1:])
+    curses.wrapper(main, args)

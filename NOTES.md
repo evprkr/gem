@@ -1,53 +1,20 @@
 # Misc Notes
 
-## Planned Changes
-    * Change scrolling buffer to offscreen cursor so it scrolls until the cursor is centered in the screen
-    * Add popup "help" window for basic shortcuts (plugin?)
-    * Implement new error handler everywhere, display errors on screen and write to log
-    * Implement prompt history
+## Design Standards
+* Directional parameters are always ordered as UP, DOWN, LEFT, RIGHT
+* Lifetime display of temporary windows is the dumbest thing ever. Lifetime is reduced by 0.5 every update, and displayed as int(lifetime / 2) -- Because an update (without user input) is 250ms, this is the closest I can get to -1/second without doing any real thinking. To make this less stupid to use, I made it so whatever lifetime you pass into the `send_alert` function is doubled, so if you pass in 10, it'll take 10 "seconds" to kill the window. Seconds are actually updates, so if you move the cursor around or type while the window is open, it'll tick down faster.
 
-## Major Changes
-    * Change text editor buffer into a widget of some kind
-    * Make buffers more generic and widgets the important part (ambiguous)
-    * Create basic plugin API
-    * Create basic color system
-    * Create basic config system
-    * Make a help command to search documentation
+## Random Ideas
+* Waypoints in files, create/delete with some hotkey, cycle forward/backward through them with another hotkey, display symbol in the gutter
 
-# What Do I Do Now?
-    * Select Mode
-    * Search Mode
-    * Split Buffers
-    * Tabbed Buffers
-    * Improved History
-    * Repeat Action
+## Misc.
 
-## Silly Ideas
-    * What if the prompt buffer could have rows added with `Shift + Enter` so you could actually write full scripts within the prompt?
-
-## Random Nonsense
 ```
- _____  ________  ___
-|  __ \|  ___|  \/  |
-| |  \/| |__ |      |
-| | __ |  __|| |\/| |
-| |_\ \| |___| |  | |
- \____/\____/\_|  |_/
-___ __  ___ ___ ___ __
-|   | \  |   |  | | | \
-|_  |  | |   |  | | |_/
-|   |  | |   |  | | | \
-|__ |_/ _|_  |  |_| |  \
 
-
-        ###
-      ###.###
-    ###.....###
-  ###...###...###
-###....#####....###
-  ###...###...###
-    ###.....###
-      ###.###
-        ###
+*****  *   *  *   *
+  *    **  *  *  *
+  *    * * *  ***
+  *    *  **  *  *
+*****  *   *  *   *
 
 ```

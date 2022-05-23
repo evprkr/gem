@@ -30,7 +30,7 @@ class Terminal:
         self.cursor = Cursor()
 
         self.windows = []
-        self.tabs = []
+        self.tabs = ["1 Example Tab\n", "2 Example Tab\n", "3 Example Tab\n"]
         self.popup = None
 
         self.prompt_open = False
@@ -204,7 +204,7 @@ class Terminal:
             self.cursor.set_mode("LIST")
             self.add_window(
                 title = "Tab Switcher",
-                contents = ['This\n', 'doesn\'t\n', 'work yet\n', ':(\n'],
+                contents = self.tabs,
                 row = self.nrows // 3,
                 col = self.ncols // 3,
                 nrows = self.nrows // 3,
@@ -458,6 +458,13 @@ class Terminal:
                 elif key == Key.CursorDown:
                     self.cursor.move_down()
                     if self.sidebar_open: self.sidebar_hint = self.cursor.row
+
+                elif key == Key.Tab:
+                    if self.tabs.index(self.tabs[self.cursor.row]) < len(self.tabs) - 1: self.cursor.move_down()
+                    else: self.cursor.goto(0, 0)
+
+                elif int(key) in Key.Numeric:
+                    if int(key) - 1 <= len(self.tabs): self.cursor.goto(int(key) - 1, 0)
 
                 elif key == Key.JumpLineStart: self.cursor.goto(self.cursor.row, 0)
                 elif key == Key.JumpLineEnding: self.cursor.goto(self.cursor.row, self.cursor.line_end - 1)

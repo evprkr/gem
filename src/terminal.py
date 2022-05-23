@@ -49,18 +49,12 @@ class Terminal:
         self.cleanlines = self.config.cleanlines
         self.hiddenfiles = self.config.hiddenfiles
         self.excludedirs = self.config.excludedirs
-        self.hlsyntax = self.config.hlsyntax
 
         # Init ActionHandler
         self.actionhandler = ActionHandler(self)
 
-        # Syntax Highlighting
-        if self.hlsyntax:
-            self.highlighter = Highlighter(self)
-            self.colorizer = Colorizer(self)
-        else:
-            self.highlighter = None
-            self.colorizer = None
+        # Init Colorizer
+        self.colorizer = Colorizer(self)
 
     # Print all windows to the screen
     def print(self):
@@ -93,7 +87,9 @@ class Terminal:
         window.title = os.path.basename(file)
         window.path = file
 
-        self.highlighter.match_lexer(window.path)
+        # Slight workaround, see issue #18 for more details
+        if not window.path.endswith('txt'):
+            window.highlighter.match_lexer()
 
     # Save the current file
     def do_save(self, file=None):

@@ -5,6 +5,8 @@ import curses
 
 from logger import log
 
+from highlighter import Highlighter
+
 
 class Window:
     def __init__(self, parent, wid, title, contents, row, col, nrows, ncols, box, margins, statusline, linenumbers, emptylines, readonly, lifetime):
@@ -39,6 +41,7 @@ class Window:
         self.readonly = readonly
 
         # "Static" Configs - Set by the settings found in the inkrc file or default values
+        self.hlsyntax = self.parent.config.hlsyntax
         self.tabstop = self.parent.config.tabstop
         self.autotabs = self.parent.config.autotabs
         self.bksptabs = self.parent.config.bksptabs
@@ -47,8 +50,8 @@ class Window:
         self.hscrolloffset = self.parent.config.hscrolloffset
 
         # Syntax Highlighting
-        self.hlsyntax = self.parent.hlsyntax
         self.language = None
+        self.highlighter = Highlighter(self)
 
         # Calculate Margins
         self.upper_edge = 0 + self.margins[0]
@@ -215,11 +218,8 @@ class Window:
 #                if self.cursor_mode == "LINE SELECT" and self.parent.cursor.sel_start_row - 1 <= row <= self.cursor_row - self.row_offset:
 #                    self.screen.insstr(self.upper_edge + row, self.left_edge, line_text, curses.A_REVERSE)
 #                else:
-                try:
-                    tagged_text = self.parent.highlighter.hl(line_text)
-                    self.parent.colorizer.print_syntax(self, self.upper_edge + row, self.left_edge, tagged_text)
-                except:
-                    self.hlsyntax = False # THIS IS A REALLY STUPID WORKAROUND FIX # TODO PLEASE FIX THIS
+                formatted_text = self.highlighter.format_text(line_text)
+                self.parent.colorizer.print_syntax(self, self.upper_edge + row, self.left_edge, formatted_text)
             else:
                 self.screen.insstr(self.upper_edge + row, self.left_edge, line_text)
 

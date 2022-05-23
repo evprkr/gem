@@ -58,7 +58,7 @@ def main(screen, args):
     # Load file from arguments
     try: terminal.do_open(args.filepath, terminal.windows[-1])
     except FileNotFoundError:
-        terminal.send_alert("Error", [f"File {args.filepath} not found!\n", "Editing new file.\n"], 5)
+        terminal.send_alert("Alert", [f"File {args.filepath} not found!\n", "Editing new file.\n"], 5)
         terminal.cursor.window.title = args.filepath
         terminal.cursor.window.dirty = True
 

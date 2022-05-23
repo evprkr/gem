@@ -46,27 +46,29 @@ class InkFormatter(Formatter):
 
 
 class Highlighter:
-    def __init__(self, terminal):
-        self.terminal = terminal
-        self.formatter = None
-        self.style = None
-
-    def match_lexer(self, path):
-        self.style = get_style_by_name(self.terminal.config.colorscheme)
+    def __init__(self, window):
+        self.window = window
+        self.style = get_style_by_name(self.window.parent.config.colorscheme)
         self.formatter = InkFormatter(style=self.style)
+        self.lexer = None
 
-        self.terminal.colorizer.default_fg = list(self.style.styles.values())[0][1:] # This is gross.
-        self.terminal.colorizer.default_bg = self.style.background_color[1:]
+    def match_lexer(self):
+        self.window.parent.colorizer.default_fg = list(self.style.styles.values())[0][1:] # This is gross, but it works. Most of the time.
+        self.window.parent.colorizer.default_bg = self.style.background_color[1:]
 
-        filename = os.path.basename(path).split()[-1]
+        try:
+            self.window.language = self.detect_language(self.window.path)
+            filename = os.path.basename(self.window.path).split()[-1]
+            self.lexer = pygments.lexers.get_lexer_for_filename(filename)
+        except:
+            self.window.hlsyntax = False
 
-        try: self.lexer = pygments.lexers.get_lexer_for_filename(filename)
-        except: self.terminal.cursor.window.hlsyntax = False
 
-        self.terminal.cursor.window.language = self.detect_language(path)
-
-    def hl(self, code):
-        return pygments.highlight(code, self.lexer, self.formatter)
+    def format_text(self, code):
+        try:
+            return pygments.highlight(code, self.lexer, self.formatter)
+        except:
+            return code
 
     def detect_language(self, path):
         extension = os.path.basename(path).split('.')[-1]

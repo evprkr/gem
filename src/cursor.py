@@ -20,6 +20,8 @@ class Cursor:
         self.sel_start_row = 0
         self.sel_start_col = 0
 
+        self.clipboard = []
+
     @property
     def line(self): # Returns the line under the cursor
         return self.window.contents[self.row]
@@ -57,6 +59,11 @@ class Cursor:
     def start_line_select_mode(self):
         self.goto(self.row, 0, "LINE SELECT")
         self.sel_start_row, self.sel_start_col = self.window.translate_pos(self)
+
+    # Copy selected text to the clipboard
+#    def copy_text(self):
+#        for row, line in enumerate(self.window.contents[self.sel_start_row:self.row]):
+#            pass
 
     # Send cursor information to the current window for it to reference
     def update_memory(self):

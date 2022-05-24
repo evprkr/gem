@@ -81,9 +81,9 @@ class Terminal:
         file = os.path.expanduser(file)
         with open(file, 'r') as f:
             window.contents = f.readlines()
-            self.cursor.goto(0, 0)
         f.close()
         if len(window.contents) == 0: window.contents = ['\n']
+        self.cursor.goto(0, 0)
         window.title = os.path.basename(file)
         window.path = file
 

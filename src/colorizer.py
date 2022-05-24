@@ -15,8 +15,9 @@ class Colorizer:
         self.color_idx = 0
         self.pair_idx = 1
 
-        self.default_fg = 'f8f8f2'
-        self.default_bg = '282a36'
+        self.default_fg = 'ffffff'
+        self.default_bg = '000000'
+        self.highlight_bg = 'cccccc'
 
         self.transparent_bg = self.terminal.config.transparentbg
 
@@ -57,29 +58,33 @@ class Colorizer:
 
     # Find and return a color pair matching a hex code, add a color or color pair if necessary
     def get_pair(self, fg_hex=None, bg_hex=None):
+        # Foreground
         if not fg_hex: fg_rgb = self.hex_to_rgb(self.default_fg)
         else: fg_rgb = self.hex_to_rgb(fg_hex)
-
-        if not bg_hex: bg_rgb = self.hex_to_rgb(self.default_bg)
-        else: bg_rgb = self.hex_to_rgb(bg_hex)
 
         if not self.color_exists(fg_rgb):
             curses.init_color(self.color_idx, int(fg_rgb[0]/0.255), int(fg_rgb[1]/0.255), int(fg_rgb[2]/0.255))
             fg_color = self.color_idx
             self.color_cache.append(fg_rgb)
             self.color_idx += 1
-        else: fg_color = self.color_cache.index(fg_rgb)
-
-
-        if self.transparent_bg: bg_color = -1
         else:
-            if not self.color_exists(bg_rgb):
-                curses.init_color(self.color_idx, int(bg_rgb[0]/0.255), int(bg_rgb[1]/0.255), int(bg_rgb[2]/0.255))
-                bg_color = self.color_idx
-                self.color_cache.append(bg_rgb)
-                self.color_idx += 1
-            else: bg_color = self.color_cache.index(bg_rgb)
+            fg_color = self.color_cache.index(fg_rgb)
 
+        # Background
+        if not bg_hex: bg_rgb = self.hex_to_rgb(self.default_bg)
+        else: bg_rgb = self.hex_to_rgb(bg_hex)
+
+        if not self.color_exists(bg_rgb):
+            curses.init_color(self.color_idx, int(bg_rgb[0]/0.255), int(bg_rgb[1]/0.255), int(bg_rgb[2]/0.255))
+            bg_color = self.color_idx
+            self.color_cache.append(bg_rgb)
+            self.color_idx += 1
+        else:
+            bg_color = self.color_cache.index(bg_rgb)
+
+        if self.transparent_bg and not bg_hex: bg_color = -1
+
+        # Pair
         pair_exists = False
         for pair in self.pair_cache:
             if pair[1] == fg_color and pair[2] == bg_color:
@@ -126,21 +131,3 @@ class Colorizer:
                 for char in token:
                     window.screen.insch(row, col + i, char, pair)
                     i += 1
-
-
-# Testing
-def main(screen):
-    color = Colorizer()
-    color.print(screen, 0, 0, "Hopefully this is cyan", "00ffff")
-    color.print(screen, 1, 0, "Hopefully this is magenta", "ff00ff")
-    color.print(screen, 2, 0, "Hopefully this is yellow", "ffff00")
-    color.print(screen, 3, 0, "Hopefully this is black", "000000")
-
-#    color.tprint(screen, 5, 0, "This [bold]text[/bold] [underline]tags[/underline] [dim]in[/dim] it")
-
-    color.tprint(screen, 7, 0, "[color=#ffff00]int[/color] num [color=#ff00ff]=[/color] [color=#00ffff]123[/color];")
-
-    screen.getch()
-
-if __name__ == '__main__':
-    curses.wrapper(main)

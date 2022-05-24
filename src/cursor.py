@@ -49,8 +49,9 @@ class Cursor:
 
     # Start select mode
     def start_select_mode(self):
-        self.sel_start_row, self.sel_start_col = self.window.translate_pos(self)
+        self.sel_start_row, self.sel_start_col = self.row + 1, self.col + 1 #self.window.translate_pos(self)
         self.mode = "SELECT"
+        self.update_memory()
 
     # Start line select mode
     def start_line_select_mode(self):

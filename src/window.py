@@ -215,13 +215,32 @@ class Window:
                 if row == self.cursor_row: self.screen.insstr(self.upper_edge + row, self.left_edge, line_text, curses.A_STANDOUT)
                 else: self.screen.insstr(self.upper_edge + row, self.left_edge, line_text)
             elif self.hlsyntax:
-#                if self.cursor_mode == "LINE SELECT" and self.parent.cursor.sel_start_row - 1 <= row <= self.cursor_row - self.row_offset:
-#                    self.screen.insstr(self.upper_edge + row, self.left_edge, line_text, curses.A_REVERSE)
-#                else:
                 formatted_text = self.highlighter.format_text(line_text)
                 self.parent.colorizer.print_syntax(self, self.upper_edge + row, self.left_edge, formatted_text)
             else:
                 self.screen.insstr(self.upper_edge + row, self.left_edge, line_text)
+
+            # Selection Highlight
+            if self.cursor_mode == "SELECT":
+                start_row = self.parent.cursor.sel_start_row
+                start_col = self.parent.cursor.sel_start_col
+
+                if row + self.row_offset + 1 == start_row:
+                    if self.cursor_row + 1 == start_row:
+                        for col, char in enumerate(line_text):
+                            if start_col - 1 <= col <= self.cursor_col:
+                                self.screen.chgat(row + 1, col + self.left_edge, 1, curses.color_pair(self.parent.colorizer.get_pair(self.parent.colorizer.default_fg, self.parent.colorizer.highlight_bg)))
+                    else:
+                        for col, char in enumerate(line_text):
+                            if col >= start_col - 1:
+                                self.screen.chgat(row + 1, col + self.left_edge, 1, curses.color_pair(self.parent.colorizer.get_pair(self.parent.colorizer.default_fg, self.parent.colorizer.highlight_bg)))
+                elif row + self.row_offset + 1 == self.cursor_row + 1:
+                    for col, char in enumerate(line_text):
+                        if col <= self.cursor_col - 1:
+                            self.screen.chgat(row + 1, col + self.left_edge, 1, curses.color_pair(self.parent.colorizer.get_pair(self.parent.colorizer.default_fg, self.parent.colorizer.highlight_bg)))
+                elif start_row <= row + self.row_offset + 1 <= self.cursor_row + 1:
+                    for col, char in enumerate(line_text):
+                        self.screen.chgat(row + 1, col + self.left_edge, 1, curses.color_pair(self.parent.colorizer.get_pair(self.parent.colorizer.default_fg, self.parent.colorizer.highlight_bg)))
 
         # Box
         if self.box:

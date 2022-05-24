@@ -53,8 +53,14 @@ class Highlighter:
         self.lexer = None
 
     def match_lexer(self):
-        self.window.parent.colorizer.default_fg = list(self.style.styles.values())[0][1:] # This is gross, but it works. Most of the time.
+        # Color definitions between different pygments styles are not consistent, not all of them have a "foreground" color defined, so we check in a few places and fall back on whatever the first color found is in the "styles" dict if all else fails
+        if hasattr(self.style, 'foreground'): self.window.parent.colorizer.default_fg = self.style.foreground[1:]
+        elif 'Text' in self.style.styles: self.window.parent.colorizer.default_fg = self.style.styles.Text.value()[1:]
+        elif 'Token' in self.style.styles: self.window.parent.colorizer.default_fg = self.style.styles.Token.value()[1:]
+        elif 'Generic' in self.style.styles: self.window.parent.colorizer.default_fg = self.style.styles.Generic.value()[1:]
+
         self.window.parent.colorizer.default_bg = self.style.background_color[1:]
+        self.window.parent.colorizer.highlight_bg = self.style.highlight_color[1:]
 
         try:
             self.window.language = self.detect_language(self.window.path)
